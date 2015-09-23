@@ -1,0 +1,69 @@
+﻿@{
+    ViewBag.Title = "Azure Search - Feature Search";
+}
+
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+
+    $(function () {
+        // Execute search if user clicks enter
+        $("#q").keyup(function (event) {
+            if (event.keyCode == 13) {
+                Search();
+            }
+        });
+    });
+
+    function Search() {
+        // We will post to the MVC controller and parse the full results on the client side
+        // You may wish to do additional pre-processing on the data before sending it back to the client
+        var q = $("#q").val();
+        
+        $.post('/home/search',
+        {
+            q: q
+        },
+        function (data) {
+            var searchResultsHTML = "<tr><td>FEATURE NAME</td><td>FEATURE CLASS</td>";
+            searchResultsHTML += "<td>STATE ALPHA</td><td>COUNTY_NAME</td>";
+            searchResultsHTML += "<td>Elevation (m)</td><td>Elevation (ft)</td><td>MAP NAME</td>";
+            searchResultsHTML += "<td>DESCRIPTION</td><td>HISTORY</td><td>DATE CREATED</td>";
+            searchResultsHTML += "<td>DATE EDITED</td></tr>";
+            for (var i = 0; i < data.length; i++) {
+                searchResultsHTML += "<td>" + data[i].Document.FEATURE_NAME + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.FEATURE_CLASS + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.STATE_ALPHA + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.COUNTY_NAME + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.ELEV_IN_M + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.ELEV_IN_FT + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.MAP_NAME + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.DESCRIPTION + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.HISTORY + "</td>";
+                searchResultsHTML += "<td>" + parseJsonDate(data[i].Document.DATE_CREATED) + "</td>";
+                searchResultsHTML += "<td>" + parseJsonDate(data[i].Document.DATE_EDITED) + "</td></tr>";
+            }
+
+            $("#searchResults").html(searchResultsHTML);
+
+        });
+
+        function parseJsonDate(jsonDateString) {
+            if (jsonDateString != null)
+                return new Date(parseInt(jsonDateString.replace('/Date(', '')));
+            else
+                return "";
+        }
+    };
+
+</script>
+<h2>USGS Features Search for Rhode Island</h2>
+
+<div class="container">
+        <input type="search" name="q" id="q" autocomplete="off" size="100"  /> <button onclick="Search();">Search</button>
+</div>
+<br />
+<div class="container">
+    <div class="row">
+        <table id="searchResults" border="1"></table>
+    </div>
+</div>
