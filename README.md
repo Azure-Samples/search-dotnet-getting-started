@@ -1,11 +1,11 @@
 ---
-services:
-platforms:
+services: Azure Search, ASP.NET MVC
+platforms: Azure
 author: azure
 ---
 
-# search-dotnet-getting-started
-Getting Started with Azure Search using .NET
+# Getting Started with Azure Search using .NET
+
 ## Running this sample
 Coming soon...
 ## Deploy this sample to Azure
