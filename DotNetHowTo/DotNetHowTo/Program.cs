@@ -134,7 +134,8 @@ namespace AzureSearch.SDKHowTo
 
             try
             {
-                indexClient.Documents.Index(IndexBatch.Create(documents.Select(doc => IndexAction.Create(doc))));
+                var batch = IndexBatch.Upload(documents);
+                indexClient.Documents.Index(batch);
             }
             catch (IndexBatchException e)
             {
@@ -143,7 +144,7 @@ namespace AzureSearch.SDKHowTo
                 // retrying. For this simple demo, we just log the failed document keys and continue.
                 Console.WriteLine(
                     "Failed to index some of the documents: {0}",
-                    String.Join(", ", e.IndexResponse.Results.Where(r => !r.Succeeded).Select(r => r.Key)));
+                    String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key)));
             }
 
             // Wait a while for indexing to complete.
@@ -160,8 +161,8 @@ namespace AzureSearch.SDKHowTo
                 sp.Filter = filter;
             }
 
-            DocumentSearchResponse<Hotel> response = indexClient.Documents.Search<Hotel>(searchText, sp);
-            foreach (SearchResult<Hotel> result in response)
+            DocumentSearchResult<Hotel> response = indexClient.Documents.Search<Hotel>(searchText, sp);
+            foreach (SearchResult<Hotel> result in response.Results)
             {
                 Console.WriteLine(result.Document);
             }

@@ -27,10 +27,8 @@ namespace SimpleSearchMVCApp.Controllers
             return new JsonResult
             {
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet,
-                Data = _featuresSearch.Search(q)
+                Data = _featuresSearch.Search(q).Results
             };
         }
-
-
     }
 }

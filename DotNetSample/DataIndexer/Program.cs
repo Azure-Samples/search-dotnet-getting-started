@@ -1,23 +1,17 @@
-﻿using Microsoft.Azure;
+﻿using System;
+using System.Configuration;
+using System.Threading;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
-using Microsoft.Spatial;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace DataIndexer
 {
     class Program
     {
+        private const string GeoNamesIndex = "geonames";
+        private const string UsgsDataSource = "usgs-datasource";
+        private const string UsgsIndexer = "usgs-indexer";
+
         private static SearchServiceClient _searchClient;
         private static SearchIndexClient _indexClient;
 
@@ -29,10 +23,10 @@ namespace DataIndexer
 
             // Create an HTTP reference to the catalog index
             _searchClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
-            _indexClient = _searchClient.Indexes.GetClient("geonames");
+            _indexClient = _searchClient.Indexes.GetClient(GeoNamesIndex);
 
-            Console.WriteLine("{0}", "Deleting index...\n");
-            if (DeleteIndex())
+            Console.WriteLine("{0}", "Deleting index, data source, and indexer...\n");
+            if (DeleteIndexingResources())
             {
                 Console.WriteLine("{0}", "Creating index...\n");
                 CreateIndex();
@@ -43,16 +37,18 @@ namespace DataIndexer
             Console.ReadKey();
         }
 
-        private static bool DeleteIndex()
+        private static bool DeleteIndexingResources()
         {
-            // Delete the index if it exists
+            // Delete the index, data source, and indexer.
             try
             {
-                _searchClient.Indexes.Delete("geonames");
+                _searchClient.Indexes.Delete(GeoNamesIndex);
+                _searchClient.DataSources.Delete(UsgsDataSource);
+                _searchClient.Indexers.Delete(UsgsIndexer);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error deleting index: {0}\r\n", ex.Message.ToString());
+                Console.WriteLine("Error deleting indexing resources: {0}\r\n", ex.Message);
                 Console.WriteLine("Did you remember to add your SearchServiceName and SearchServiceApiKey to the app.config?\r\n");
                 return false;
             }
@@ -67,7 +63,7 @@ namespace DataIndexer
             {
                 var definition = new Index()
                 {
-                    Name = "geonames",
+                    Name = GeoNamesIndex,
                     Fields = new[] 
                     { 
                         new Field("FEATURE_ID",     DataType.String)         { IsKey = true,  IsSearchable = false, IsFilterable = false, IsSortable = false, IsFacetable = false, IsRetrievable = true},
@@ -91,7 +87,7 @@ namespace DataIndexer
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error creating index: {0}\r\n", ex.Message.ToString());
+                Console.WriteLine("Error creating index: {0}\r\n", ex.Message);
             }
 
         }
@@ -99,36 +95,45 @@ namespace DataIndexer
         private static void SyncDataFromAzureSQL()
         {
             // This will use the Azure Search Indexer to synchronize data from Azure SQL to Azure Search
-            Uri _serviceUri = new Uri("https://" + ConfigurationManager.AppSettings["SearchServiceName"] + ".search.windows.net");
-            HttpClient _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("api-key", ConfigurationManager.AppSettings["SearchServiceApiKey"]);
-
             Console.WriteLine("{0}", "Creating Data Source...\n");
-            Uri uri = new Uri(_serviceUri, "datasources/usgs-datasource");
-            string json = "{ 'name' : 'usgs-datasource','description' : 'USGS Dataset','type' : 'azuresql','credentials' : { 'connectionString' : 'Server=tcp:azs-playground.database.windows.net,1433;Database=usgs;User ID=reader;Password=EdrERBt3j6mZDP;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;' },'container' : { 'name' : 'GeoNamesRI' }} ";
-            HttpResponseMessage response = AzureSearchHelper.SendSearchRequest(_httpClient, HttpMethod.Put, uri, json);
-            if (response.StatusCode != HttpStatusCode.Created && response.StatusCode != HttpStatusCode.NoContent)
+            var dataSource =
+                new DataSource()
+                {
+                    Name = UsgsDataSource,
+                    Description = "USGS Dataset",
+                    Type = DataSourceType.AzureSql,
+                    Credentials = new DataSourceCredentials("Server=tcp:azs-playground.database.windows.net,1433;Database=usgs;User ID=reader;Password=EdrERBt3j6mZDP;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;"),
+                    Container = new DataContainer("GeoNamesRI")
+                };
+
+            try
             {
-                Console.WriteLine("Error creating data source: {0}", response.Content.ReadAsStringAsync().Result);
+                _searchClient.DataSources.Create(dataSource);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error creating data source: {0}", ex.Message);
                 return;
             }
 
-            Console.WriteLine("{0}", "Creating Indexer...\n");
-            uri = new Uri(_serviceUri, "indexers/usgs-indexer");
-            json = "{ 'name' : 'usgs-indexer','description' : 'USGS data indexer','dataSourceName' : 'usgs-datasource','targetIndexName' : 'geonames','parameters' : { 'maxFailedItems' : 10, 'maxFailedItemsPerBatch' : 5, 'base64EncodeKeys': false }}";
-            response = AzureSearchHelper.SendSearchRequest(_httpClient, HttpMethod.Put, uri, json);
-            if (response.StatusCode != HttpStatusCode.Created && response.StatusCode != HttpStatusCode.NoContent)
-            {
-                Console.WriteLine("Error creating indexer: {0}", response.Content.ReadAsStringAsync().Result);
-                return;
-            }
+            Console.WriteLine("{0}", "Creating Indexer and syncing data...\n");
 
-            Console.WriteLine("{0}", "Syncing data...\n");
-            uri = new Uri(_serviceUri, "indexers/usgs-indexer/run");
-            response = AzureSearchHelper.SendSearchRequest(_httpClient, HttpMethod.Post, uri);
-            if (response.StatusCode != HttpStatusCode.Accepted)
+            var indexer =
+                new Indexer()
+                {
+                    Name = UsgsIndexer,
+                    Description = "USGS data indexer",
+                    DataSourceName = dataSource.Name,
+                    TargetIndexName = GeoNamesIndex
+                };
+
+            try
             {
-                Console.WriteLine("Error running indexer: {0}", response.Content.ReadAsStringAsync().Result);
+                _searchClient.Indexers.Create(indexer);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error creating and running indexer: {0}", ex.Message);
                 return;
             }
 
@@ -136,32 +141,36 @@ namespace DataIndexer
             Console.WriteLine("{0}", "Synchronization running...\n");
             while (running)
             {
-                uri = new Uri(_serviceUri, "indexers/usgs-indexer/status");
-                response = AzureSearchHelper.SendSearchRequest(_httpClient, HttpMethod.Get, uri);
-                if (response.StatusCode != HttpStatusCode.OK)
+                IndexerExecutionInfo status = null;
+
+                try
                 {
-                    Console.WriteLine("Error polling for indexer status: {0}", response.Content.ReadAsStringAsync().Result);
+                    status = _searchClient.Indexers.GetStatus(indexer.Name);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error polling for indexer status: {0}", ex.Message);
                     return;
                 }
 
-                var result = AzureSearchHelper.DeserializeJson<dynamic>(response.Content.ReadAsStringAsync().Result);
-                if (result.lastResult != null)
+                IndexerExecutionResult lastResult = status.LastResult;
+                if (lastResult != null)
                 {
-                    switch ((string)result.lastResult.status)
+                    switch (lastResult.Status)
                     {
-                        case "inProgress":
+                        case IndexerExecutionStatus.InProgress:
                             Console.WriteLine("{0}", "Synchronization running...\n");
                             Thread.Sleep(1000);
                             break;
 
-                        case "success":
+                        case IndexerExecutionStatus.Success:
                             running = false;
-                            Console.WriteLine("Synchronized {0} rows...\n", result.lastResult.itemsProcessed.Value);
+                            Console.WriteLine("Synchronized {0} rows...\n", lastResult.ItemCount);
                             break;
 
                         default:
                             running = false;
-                            Console.WriteLine("Synchronization failed: {0}\n", result.lastResult.errorMessage);
+                            Console.WriteLine("Synchronization failed: {0}\n", lastResult.ErrorMessage);
                             break;
                     }
                 }
