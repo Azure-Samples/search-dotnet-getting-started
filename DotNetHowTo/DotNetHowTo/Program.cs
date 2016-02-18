@@ -54,12 +54,15 @@ namespace AzureSearch.SDKHowTo
                 Name = "hotels",
                 Fields = new[] 
                 { 
-                    new Field("hotelId", DataType.String)                       { IsKey = true },
-                    new Field("hotelName", DataType.String)                     { IsSearchable = true, IsFilterable = true },
-                    new Field("baseRate", DataType.Double)                      { IsFilterable = true, IsSortable = true },
+                    new Field("hotelId", DataType.String)                       { IsKey = true, IsFilterable = true },
+                    new Field("baseRate", DataType.Double)                      { IsFilterable = true, IsSortable = true, IsFacetable = true },
+                    new Field("description", DataType.String)                   { IsSearchable = true },
+                    new Field("description_fr", AnalyzerName.FrLucene),
+                    new Field("hotelName", DataType.String)                     { IsSearchable = true, IsFilterable = true, IsSortable = true },
                     new Field("category", DataType.String)                      { IsSearchable = true, IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new Field("tags", DataType.Collection(DataType.String))     { IsSearchable = true, IsFilterable = true, IsFacetable = true },
                     new Field("parkingIncluded", DataType.Boolean)              { IsFilterable = true, IsFacetable = true },
+                    new Field("smokingAllowed", DataType.Boolean)               { IsFilterable = true, IsFacetable = true },
                     new Field("lastRenovationDate", DataType.DateTimeOffset)    { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new Field("rating", DataType.Int32)                         { IsFilterable = true, IsSortable = true, IsFacetable = true },
                     new Field("location", DataType.GeographyPoint)              { IsFilterable = true, IsSortable = true }
@@ -77,23 +80,29 @@ namespace AzureSearch.SDKHowTo
                     new Hotel()
                     { 
                         HotelId = "1058-441", 
-                        HotelName = "Fancy Stay", 
                         BaseRate = 199.0, 
+                        HotelName = "Fancy Stay",
+                        Description = "Best hotel in town",
+                        DescriptionFr = "Meilleur hôtel en ville",
                         Category = "Luxury", 
                         Tags = new[] { "pool", "view", "concierge" }, 
                         ParkingIncluded = false, 
+                        SmokingAllowed = false,
                         LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
                         Rating = 5, 
                         Location = GeographyPoint.Create(47.678581, -122.131577)
                     },
                     new Hotel()
                     { 
-                        HotelId = "666-437", 
-                        HotelName = "Roach Motel",
+                        HotelId = "665-437", 
                         BaseRate = 79.99,
+                        Description = "Cheapest hotel in town",
+                        DescriptionFr = "Hôtel le moins cher en ville",
+                        HotelName = "Roach Motel",
                         Category = "Budget",
                         Tags = new[] { "motel", "budget" },
                         ParkingIncluded = true,
+                        SmokingAllowed = true,
                         LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
                         Rating = 1,
                         Location = GeographyPoint.Create(49.678581, -122.131577)
@@ -101,8 +110,8 @@ namespace AzureSearch.SDKHowTo
                     new Hotel() 
                     { 
                         HotelId = "970-501", 
-                        HotelName = "Econo-Stay",
                         BaseRate = 129.99,
+                        HotelName = "Econo-Stay",
                         Category = "Budget",
                         Tags = new[] { "pool", "budget" },
                         ParkingIncluded = true,
@@ -113,8 +122,8 @@ namespace AzureSearch.SDKHowTo
                     new Hotel()
                     { 
                         HotelId = "956-532", 
-                        HotelName = "Express Rooms",
                         BaseRate = 129.99,
+                        HotelName = "Express Rooms",
                         Category = "Budget",
                         Tags = new[] { "wifi", "budget" },
                         ParkingIncluded = true,
@@ -125,8 +134,8 @@ namespace AzureSearch.SDKHowTo
                     new Hotel() 
                     { 
                         HotelId = "566-518", 
-                        HotelName = "Surprisingly Expensive Suites",
                         BaseRate = 279.99,
+                        HotelName = "Surprisingly Expensive Suites",
                         Category = "Luxury",
                         ParkingIncluded = false
                     }
