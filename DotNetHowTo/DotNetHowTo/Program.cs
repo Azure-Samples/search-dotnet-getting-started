@@ -24,16 +24,62 @@ namespace AzureSearch.SDKHowTo
             Console.WriteLine("{0}", "Creating index...\n");
             CreateHotelsIndex(serviceClient);
 
-            SearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
-            
             Console.WriteLine("{0}", "Uploading documents...\n");
-            UploadDocuments(indexClient);
-            
-            Console.WriteLine("{0}", "Searching documents 'fancy wifi'...\n");
-            SearchDocuments(indexClient, searchText: "fancy wifi");
+            UploadDocuments(serviceClient);
 
-            Console.WriteLine("\n{0}", "Filter documents with category 'Luxury'...\n");
-            SearchDocuments(indexClient, searchText: "*", filter: "category eq 'Luxury'");
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(apiKey));
+
+            SearchParameters parameters;
+            DocumentSearchResult<Hotel> results;
+
+            Console.WriteLine("Search the entire index for the term 'budget' and return only the hotelName field:\n");
+
+            parameters = 
+                new SearchParameters() 
+                { 
+                    Select = new[] { "hotelName" }
+                };
+            
+            results = indexClient.Documents.Search<Hotel>("budget", parameters);
+            
+            WriteDocuments(results);
+
+            Console.Write("Apply a filter to the index to find hotels cheaper than $150 per night, ");
+            Console.WriteLine("and return the hotelId and description:\n");
+
+            parameters =
+                new SearchParameters()
+                {
+                    Filter = "baseRate lt 150",
+                    Select = new[] { "hotelId", "description" }
+                };
+
+            results = indexClient.Documents.Search<Hotel>("*", parameters);
+
+            WriteDocuments(results);
+
+            Console.Write("Search the entire index, order by a specific field (lastRenovationDate) ");
+            Console.Write("in descending order, take the top two results, and show only hotelName and ");
+            Console.WriteLine("lastRenovationDate:\n");
+
+            parameters =
+                new SearchParameters()
+                {
+                    OrderBy = new[] { "lastRenovationDate desc" },
+                    Select = new[] { "hotelName", "lastRenovationDate" },
+                    Top = 2
+                };
+
+            results = indexClient.Documents.Search<Hotel>("*", parameters);
+
+            WriteDocuments(results);
+
+            Console.WriteLine("Search the entire index for the term 'motel':\n");
+
+            parameters = new SearchParameters();
+            results = indexClient.Documents.Search<Hotel>("motel", parameters);
+
+            WriteDocuments(results);
 
             Console.WriteLine("{0}", "Complete.  Press any key to end application...\n");
             Console.ReadKey();
@@ -72,78 +118,59 @@ namespace AzureSearch.SDKHowTo
             serviceClient.Indexes.Create(definition);
         }
 
-        private static void UploadDocuments(SearchIndexClient indexClient)
+        private static void UploadDocuments(SearchServiceClient serviceClient)
         {
-            var documents =
-                new Hotel[]
+            SearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
+
+            var actions =
+                new IndexAction<Hotel>[]
                 {
-                    new Hotel()
-                    { 
-                        HotelId = "1058-441", 
-                        BaseRate = 199.0, 
-                        HotelName = "Fancy Stay",
-                        Description = "Best hotel in town",
-                        DescriptionFr = "Meilleur hôtel en ville",
-                        Category = "Luxury", 
-                        Tags = new[] { "pool", "view", "concierge" }, 
-                        ParkingIncluded = false, 
-                        SmokingAllowed = false,
-                        LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
-                        Rating = 5, 
-                        Location = GeographyPoint.Create(47.678581, -122.131577)
-                    },
-                    new Hotel()
-                    { 
-                        HotelId = "665-437", 
-                        BaseRate = 79.99,
-                        Description = "Cheapest hotel in town",
-                        DescriptionFr = "Hôtel le moins cher en ville",
-                        HotelName = "Roach Motel",
-                        Category = "Budget",
-                        Tags = new[] { "motel", "budget" },
-                        ParkingIncluded = true,
-                        SmokingAllowed = true,
-                        LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
-                        Rating = 1,
-                        Location = GeographyPoint.Create(49.678581, -122.131577)
-                    },
-                    new Hotel() 
-                    { 
-                        HotelId = "970-501", 
-                        BaseRate = 129.99,
-                        HotelName = "Econo-Stay",
-                        Category = "Budget",
-                        Tags = new[] { "pool", "budget" },
-                        ParkingIncluded = true,
-                        LastRenovationDate = new DateTimeOffset(1995, 7, 1, 0, 0, 0, TimeSpan.Zero),
-                        Rating = 4,
-                        Location = GeographyPoint.Create(46.678581, -122.131577)
-                    },
-                    new Hotel()
-                    { 
-                        HotelId = "956-532", 
-                        BaseRate = 129.99,
-                        HotelName = "Express Rooms",
-                        Category = "Budget",
-                        Tags = new[] { "wifi", "budget" },
-                        ParkingIncluded = true,
-                        LastRenovationDate = new DateTimeOffset(1995, 7, 1, 0, 0, 0, TimeSpan.Zero),
-                        Rating = 4,
-                        Location = GeographyPoint.Create(48.678581, -122.131577)
-                    },
-                    new Hotel() 
-                    { 
-                        HotelId = "566-518", 
-                        BaseRate = 279.99,
-                        HotelName = "Surprisingly Expensive Suites",
-                        Category = "Luxury",
-                        ParkingIncluded = false
-                    }
+                    IndexAction.Upload(
+                        new Hotel()
+                        { 
+                            HotelId = "1", 
+                            BaseRate = 199.0, 
+                            Description = "Best hotel in town",
+                            DescriptionFr = "Meilleur hôtel en ville",
+                            HotelName = "Fancy Stay",
+                            Category = "Luxury", 
+                            Tags = new[] { "pool", "view", "wifi", "concierge" },
+                            ParkingIncluded = false, 
+                            SmokingAllowed = false,
+                            LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
+                            Rating = 5, 
+                            Location = GeographyPoint.Create(47.678581, -122.131577)
+                        }),
+                    IndexAction.Upload(
+                        new Hotel()
+                        { 
+                            HotelId = "2", 
+                            BaseRate = 79.99,
+                            Description = "Cheapest hotel in town",
+                            DescriptionFr = "Hôtel le moins cher en ville",
+                            HotelName = "Roach Motel",
+                            Category = "Budget",
+                            Tags = new[] { "motel", "budget" },
+                            ParkingIncluded = true,
+                            SmokingAllowed = true,
+                            LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                            Rating = 1,
+                            Location = GeographyPoint.Create(49.678581, -122.131577)
+                        }),
+                    IndexAction.MergeOrUpload(
+                        new Hotel() 
+                        { 
+                            HotelId = "3", 
+                            BaseRate = 129.99,
+                            Description = "Close to town hall and the river"
+                        }),
+                    IndexAction.Delete(new Hotel() { HotelId = "6" })
                 };
+
+            var batch = IndexBatch.New(actions);
 
             try
             {
-                var batch = IndexBatch.Upload(documents);
                 indexClient.Documents.Index(batch);
             }
             catch (IndexBatchException e)
@@ -156,25 +183,18 @@ namespace AzureSearch.SDKHowTo
                     String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key)));
             }
 
-            // Wait a while for indexing to complete.
+            Console.WriteLine("Waiting for documents to be indexed...\n");
             Thread.Sleep(2000);
         }
 
-        private static void SearchDocuments(SearchIndexClient indexClient, string searchText, string filter = null)
+        private static void WriteDocuments(DocumentSearchResult<Hotel> searchResults)
         {
-            // Execute search based on search text and optional filter 
-            var sp = new SearchParameters();
-            
-            if (!String.IsNullOrEmpty(filter))
-            {
-                sp.Filter = filter;
-            }
-
-            DocumentSearchResult<Hotel> response = indexClient.Documents.Search<Hotel>(searchText, sp);
-            foreach (SearchResult<Hotel> result in response.Results)
+            foreach (SearchResult<Hotel> result in searchResults.Results)
             {
                 Console.WriteLine(result.Document);
             }
+
+            Console.WriteLine();
         }
     }
 }

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace AzureSearch.SDKHowTo
 {
     [SerializePropertyNamesAsCamelCase]
-    public class Hotel
+    public partial class Hotel
     {
         public string HotelId { get; set; }
 
@@ -33,14 +33,6 @@ namespace AzureSearch.SDKHowTo
 
         public GeographyPoint Location { get; set; }
 
-        public override string ToString()
-        {
-            return String.Format(
-                "ID: {0}\tName: {1}\tCategory: {2}\tTags: [{3}]",
-                HotelId,
-                HotelName,
-                Category,
-                (Tags != null) ? String.Join(", ", Tags) : String.Empty);
-        }
+        // ToString() method omitted for brevity...
     }
 }
