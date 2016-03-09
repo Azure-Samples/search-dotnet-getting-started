@@ -13,10 +13,7 @@ namespace AzureSearch.SDKHowTo
         // This sample shows how to delete, create, upload documents and query an index
         static void Main(string[] args)
         {
-            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
-
-            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
+            SearchServiceClient serviceClient = CreateSearchServiceClient();
 
             Console.WriteLine("{0}", "Deleting index...\n");
             DeleteHotelsIndexIfExists(serviceClient);
@@ -27,7 +24,7 @@ namespace AzureSearch.SDKHowTo
             Console.WriteLine("{0}", "Uploading documents...\n");
             UploadDocuments(serviceClient);
 
-            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(apiKey));
+            SearchIndexClient indexClient = CreateSearchIndexClient();
 
             SearchParameters parameters;
             DocumentSearchResult<Hotel> results;
@@ -83,6 +80,24 @@ namespace AzureSearch.SDKHowTo
 
             Console.WriteLine("{0}", "Complete.  Press any key to end application...\n");
             Console.ReadKey();
+        }
+
+        private static SearchServiceClient CreateSearchServiceClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string adminApiKey = ConfigurationManager.AppSettings["SearchServiceAdminApiKey"];
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+            return serviceClient;
+        }
+
+        private static SearchIndexClient CreateSearchIndexClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceQueryApiKey"];
+
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(queryApiKey));
+            return indexClient;
         }
 
         private static void DeleteHotelsIndexIfExists(SearchServiceClient serviceClient)
