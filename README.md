@@ -36,3 +36,7 @@ For more details on these samples, please refer to these articles on Azure.com:
 
   - [How to use Azure Search from a .NET Application](https://azure.microsoft.com/en-us/documentation/articles/search-howto-dotnet-sdk/).
   - [Get started with your first Azure Search application in .NET](https://azure.microsoft.com/en-us/documentation/articles/search-get-started-dotnet/).
+
+---
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
