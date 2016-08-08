@@ -7,8 +7,8 @@ namespace SimpleSearchMVCApp
 {
     public class FeaturesSearch
     {
-        private static SearchServiceClient _searchClient;
-        private static SearchIndexClient _indexClient;
+        private static ISearchServiceClient _searchClient;
+        private static ISearchIndexClient _indexClient;
 
         public static string errorMessage;
 

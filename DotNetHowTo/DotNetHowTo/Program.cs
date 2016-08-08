@@ -135,7 +135,7 @@ namespace AzureSearch.SDKHowTo
 
         private static void UploadDocuments(SearchServiceClient serviceClient)
         {
-            SearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
 
             var actions =
                 new IndexAction<Hotel>[]

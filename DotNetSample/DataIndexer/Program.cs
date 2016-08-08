@@ -12,8 +12,8 @@ namespace DataIndexer
         private const string UsgsDataSource = "usgs-datasource";
         private const string UsgsIndexer = "usgs-indexer";
 
-        private static SearchServiceClient _searchClient;
-        private static SearchIndexClient _indexClient;
+        private static ISearchServiceClient _searchClient;
+        private static ISearchIndexClient _indexClient;
 
         // This Sample shows how to delete, create, upload documents and query an index
         static void Main(string[] args)
