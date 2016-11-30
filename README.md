@@ -32,10 +32,9 @@ The second sample AzureSearchDotNetSample is a more detailed example that demons
 
 ## More information
 
-For more details on these samples, please refer to these articles:
+For more details on the "how-to" sample, please refer to this article:
 
   - [How to use Azure Search from a .NET Application](https://docs.microsoft.com/azure/search/search-howto-dotnet-sdk).
-  - [Get started with your first Azure Search application in .NET](https://docs.microsoft.com/azure/search/search-howto-dotnet-sdk).
 
 ---
 
