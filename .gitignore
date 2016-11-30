@@ -6,6 +6,7 @@
 *.user
 *.sln.docstates
 developer/
+.vs/
 
 # Build results
 binaries/

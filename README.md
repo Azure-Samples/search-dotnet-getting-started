@@ -6,7 +6,7 @@ author: brjohnst
 
 # Getting Started with Azure Search using .NET
 
-This sample includes two projects that are meant to help when getting started with Azure Search and .NET.  It leverages the [Azure Search .NET SDK](https://www.nuget.org/packages/Microsoft.Azure.Search) as well as many best practices. The first sample DotNetHowTo is a simple .NET console application that shows how to:
+This sample includes two projects that are meant to help when getting started with Azure Search and .NET.  It leverages the [Azure Search .NET SDK](https://aka.ms/search-sdk) as well as many best practices. The first sample DotNetHowTo is a simple .NET console application that shows how to:
 
 * Create and Delete an Azure Search index
 * Upload Documents to an Azure Search index
@@ -32,10 +32,9 @@ The second sample AzureSearchDotNetSample is a more detailed example that demons
 
 ## More information
 
-For more details on these samples, please refer to these articles on Azure.com:
+For more details on the "how-to" sample, please refer to this article:
 
-  - [How to use Azure Search from a .NET Application](https://azure.microsoft.com/en-us/documentation/articles/search-howto-dotnet-sdk/).
-  - [Get started with your first Azure Search application in .NET](https://azure.microsoft.com/en-us/documentation/articles/search-get-started-dotnet/).
+  - [How to use Azure Search from a .NET Application](https://docs.microsoft.com/azure/search/search-howto-dotnet-sdk).
 
 ---
 
