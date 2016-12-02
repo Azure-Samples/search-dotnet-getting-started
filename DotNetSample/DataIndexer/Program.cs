@@ -97,14 +97,11 @@ namespace DataIndexer
             // This will use the Azure Search Indexer to synchronize data from Azure SQL to Azure Search
             Console.WriteLine("{0}", "Creating Data Source...\n");
             var dataSource =
-                new DataSource()
-                {
-                    Name = UsgsDataSource,
-                    Description = "USGS Dataset",
-                    Type = DataSourceType.AzureSql,
-                    Credentials = new DataSourceCredentials("Server=tcp:azs-playground.database.windows.net,1433;Database=usgs;User ID=reader;Password=EdrERBt3j6mZDP;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;"),
-                    Container = new DataContainer("GeoNamesRI")
-                };
+                DataSource.AzureSql(
+                    name: UsgsDataSource,
+                    sqlConnectionString: "Server=tcp:azs-playground.database.windows.net,1433;Database=usgs;User ID=reader;Password=EdrERBt3j6mZDP;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;",
+                    tableOrViewName: "GeoNamesRI",
+                    description: "USGS Dataset");
 
             try
             {
