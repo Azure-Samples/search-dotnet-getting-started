@@ -7,8 +7,8 @@
     <ProjectGuid>{001AB02D-B165-4FB4-808C-48502C69E8BA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AzureSearch.SDKHowTo</RootNamespace>
-    <AssemblyName>AzureSearch.SDKHowTo</AssemblyName>
+    <RootNamespace>AzureSearch.SDKHowToSynonyms</RootNamespace>
+    <AssemblyName>AzureSearch.SDKHowToSynonyms</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
