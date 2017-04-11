@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace AzureSearch.SDKHowTo
+namespace AzureSearch.SDKHowToSynonyms
 {
     public partial class Hotel
     {

@@ -8,7 +8,7 @@ using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Spatial;
 
-namespace AzureSearch.SDKHowTo
+namespace AzureSearch.SDKHowToSynonyms
 {
     class Program
     {

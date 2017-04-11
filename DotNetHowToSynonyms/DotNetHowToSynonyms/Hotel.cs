@@ -5,7 +5,7 @@ using Microsoft.Azure.Search.Models;
 using Microsoft.Spatial;
 using Newtonsoft.Json;
 
-namespace AzureSearch.SDKHowTo
+namespace AzureSearch.SDKHowToSynonyms
 {
     [SerializePropertyNamesAsCamelCase]
     public partial class Hotel
