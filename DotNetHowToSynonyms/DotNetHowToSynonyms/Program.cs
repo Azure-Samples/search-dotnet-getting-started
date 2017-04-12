@@ -47,7 +47,7 @@ namespace AzureSearch.SDKHowToSynonyms
         private static SearchServiceClient CreateSearchServiceClient()
         {
             string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string adminApiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
+            string adminApiKey = ConfigurationManager.AppSettings["SearchServiceAdminApiKey"];
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
             return serviceClient;
@@ -56,7 +56,7 @@ namespace AzureSearch.SDKHowToSynonyms
         private static SearchIndexClient CreateSearchIndexClient()
         {
             string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceQueryApiKey"];
 
             SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(queryApiKey));
             return indexClient;
@@ -192,7 +192,7 @@ namespace AzureSearch.SDKHowToSynonyms
             WriteDocuments(results);
 
             Console.WriteLine("Search the entire index for the terms 'economy' AND 'hotel':\n");
-            results = indexClient.Documents.Search<Hotel>("economy hotel", parameters);
+            results = indexClient.Documents.Search<Hotel>("economy AND hotel", parameters);
             WriteDocuments(results);
         }
 
