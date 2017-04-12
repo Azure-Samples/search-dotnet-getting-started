@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{001AB02D-B165-4FB4-808C-48502C69E8BA}</ProjectGuid>
+    <ProjectGuid>{922C9778-230E-489C-9215-DB0C2089D34D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AzureSearch.SDKHowToSynonyms</RootNamespace>
