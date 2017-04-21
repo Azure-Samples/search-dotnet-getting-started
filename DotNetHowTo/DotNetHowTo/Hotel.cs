@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Spatial;
@@ -7,10 +6,13 @@ using Newtonsoft.Json;
 
 namespace AzureSearch.SDKHowTo
 {
+    // The SerializePropertyNamesAsCamelCase attribute is defined in the Azure Search .NET SDK.
+    // It ensures that Pascal-case property names in the model class are mapped to camel-case
+    // field names in the index.
     [SerializePropertyNamesAsCamelCase]
     public partial class Hotel
     {
-        [Key]
+        [System.ComponentModel.DataAnnotations.Key]
         [IsFilterable]
         public string HotelId { get; set; }
 
@@ -48,7 +50,5 @@ namespace AzureSearch.SDKHowTo
 
         [IsFilterable, IsSortable]
         public GeographyPoint Location { get; set; }
-
-        // ToString() method omitted for brevity...
     }
 }
