@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Spatial;
@@ -10,7 +9,7 @@ namespace AzureSearch.SDKHowTo
     [SerializePropertyNamesAsCamelCase]
     public partial class Hotel
     {
-        [Key]
+        [System.ComponentModel.DataAnnotations.Key]
         [IsFilterable]
         public string HotelId { get; set; }
 
@@ -48,7 +47,5 @@ namespace AzureSearch.SDKHowTo
 
         [IsFilterable, IsSortable]
         public GeographyPoint Location { get; set; }
-
-        // ToString() method omitted for brevity...
     }
 }
