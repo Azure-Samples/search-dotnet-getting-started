@@ -1,11 +1,11 @@
 ﻿#define HowToExample
 
 using System;
-using System.Configuration;
 using System.Linq;
 using System.Threading;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Spatial;
 
 namespace AzureSearch.SDKHowTo
@@ -15,7 +15,10 @@ namespace AzureSearch.SDKHowTo
         // This sample shows how to delete, create, upload documents and query an index
         static void Main(string[] args)
         {
-            SearchServiceClient serviceClient = CreateSearchServiceClient();
+            IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+            IConfigurationRoot configuration = builder.Build();
+
+            SearchServiceClient serviceClient = CreateSearchServiceClient(configuration);
 
             Console.WriteLine("{0}", "Deleting index...\n");
             DeleteHotelsIndexIfExists(serviceClient);
@@ -28,7 +31,7 @@ namespace AzureSearch.SDKHowTo
             Console.WriteLine("{0}", "Uploading documents...\n");
             UploadDocuments(indexClient);
 
-            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient();
+            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient(configuration);
 
             RunQueries(indexClientForQueries);
 
@@ -36,19 +39,19 @@ namespace AzureSearch.SDKHowTo
             Console.ReadKey();
         }
 
-        private static SearchServiceClient CreateSearchServiceClient()
+        private static SearchServiceClient CreateSearchServiceClient(IConfigurationRoot configuration)
         {
-            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string adminApiKey = ConfigurationManager.AppSettings["SearchServiceAdminApiKey"];
+            string searchServiceName = configuration["SearchServiceName"];
+            string adminApiKey = configuration["SearchServiceAdminApiKey"];
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
             return serviceClient;
         }
 
-        private static SearchIndexClient CreateSearchIndexClient()
+        private static SearchIndexClient CreateSearchIndexClient(IConfigurationRoot configuration)
         {
-            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceQueryApiKey"];
+            string searchServiceName = configuration["SearchServiceName"];
+            string queryApiKey = configuration["SearchServiceQueryApiKey"];
 
             SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(queryApiKey));
             return indexClient;
