@@ -1,8 +1,8 @@
-﻿using System;
-using System.Text;
-
-namespace AzureSearch.SDKHowTo
+﻿namespace AzureSearch.SDKHowTo
 {
+    using System;
+    using System.Text;
+
     public partial class Hotel
     {
         // This implementation of ToString() is only for the purposes of the sample console application.

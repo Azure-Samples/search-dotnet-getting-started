@@ -1,15 +1,15 @@
 ﻿#define HowToExample
 
-using System;
-using System.Linq;
-using System.Threading;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Spatial;
-
 namespace AzureSearch.SDKHowTo
 {
+    using System;
+    using System.Linq;
+    using System.Threading;
+    using Microsoft.Azure.Search;
+    using Microsoft.Azure.Search.Models;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Spatial;
+
     class Program
     {
         // This sample shows how to delete, create, upload documents and query an index
