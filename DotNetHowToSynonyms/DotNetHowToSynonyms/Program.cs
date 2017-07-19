@@ -92,7 +92,7 @@ namespace AzureSearch.SDKHowToSynonyms
         private static void EnableSynonymsInHotelsIndexSafely(SearchServiceClient serviceClient)
         {
             Index index = serviceClient.Indexes.Get("hotels");
-            index = EnableSynonymsInIndex(index);
+            index = AddSynonymMapsToFields(index);
 
             try
             {
@@ -103,13 +103,13 @@ namespace AzureSearch.SDKHowToSynonyms
             {
                 // If accessCondition fails, GET the latest version, re-apply the change, and update
                 index = serviceClient.Indexes.Get("hotels");
-                index = EnableSynonymsInIndex(index);
+                index = AddSynonymMapsToFields(index);
 
                 serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.GenerateIfMatchCondition(index.ETag));
             }
         }
 
-        private static Index EnableSynonymsInIndex(Index index)
+        private static Index AddSynonymMapsToFields(Index index)
         {
             index.Fields.First(f => f.Name == "category").SynonymMaps = new[] { "desc-synonymmap" };
             index.Fields.First(f => f.Name == "tags").SynonymMaps = new[] { "desc-synonymmap" };
