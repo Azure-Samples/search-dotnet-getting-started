@@ -34,7 +34,7 @@ namespace AzureSearch.SDKHowToSynonyms
             RunQueriesWithNonExistentTermsInIndex(indexClientForQueries);
 
             Console.WriteLine("Adding synonyms...\n");
-            SynonymMap synonymMap = UploadSynonyms(serviceClient);
+            UploadSynonyms(serviceClient);
 
             Console.WriteLine("Enabling synonyms in the test index...\n");
             EnableSynonymsInHotelsIndexSafely(serviceClient);
