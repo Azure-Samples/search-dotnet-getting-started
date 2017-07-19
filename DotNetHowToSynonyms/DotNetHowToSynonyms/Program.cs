@@ -7,6 +7,7 @@ using System.Threading;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Spatial;
+using Microsoft.Rest.Azure;
 
 namespace AzureSearch.SDKHowToSynonyms
 {
@@ -17,29 +18,31 @@ namespace AzureSearch.SDKHowToSynonyms
         {
             SearchServiceClient serviceClient = CreateSearchServiceClient();
 
-            Console.WriteLine("{0}", "Cleaning up resources...\n");
+            Console.WriteLine("Cleaning up resources...\n");
             CleanupResources(serviceClient);
 
-            Console.WriteLine("{0}", "Creating index...\n");
+            Console.WriteLine("Creating index...\n");
             CreateHotelsIndex(serviceClient);
 
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
 
-            Console.WriteLine("{0}", "Uploading documents...\n");
+            Console.WriteLine("Uploading documents...\n");
             UploadDocuments(indexClient);
 
             ISearchIndexClient indexClientForQueries = CreateSearchIndexClient();
 
             RunQueriesWithNonExistentTermsInIndex(indexClientForQueries);
 
-            Console.WriteLine("{0}", "Adding synonyms...\n");
-            UploadSynonyms(serviceClient);
-            EnableSynonymsInHotelsIndex(serviceClient);
+            Console.WriteLine("Adding synonyms...\n");
+            SynonymMap synonymMap = UploadSynonyms(serviceClient);
+
+            Console.WriteLine("Enabling synonyms in the test index...\n");
+            EnableSynonymsInHotelsIndexSafely(serviceClient);
             Thread.Sleep(10000); // Wait for the changes to propagate
 
             RunQueriesWithNonExistentTermsInIndex(indexClientForQueries);
 
-            Console.WriteLine("{0}", "Complete.  Press any key to end application...\n");
+            Console.WriteLine("Complete.  Press any key to end application...\n");
 
             Console.ReadKey();
         }
@@ -86,13 +89,31 @@ namespace AzureSearch.SDKHowToSynonyms
             serviceClient.Indexes.Create(definition);
         }
 
-        private static void EnableSynonymsInHotelsIndex(SearchServiceClient serviceClient)
+        private static void EnableSynonymsInHotelsIndexSafely(SearchServiceClient serviceClient)
         {
             Index index = serviceClient.Indexes.Get("hotels");
+            index = EnableSynonymsInIndex(index);
+
+            try
+            {
+                // The IfMatchCondition ensure that the index is updated only if the ETags match.
+                serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.GenerateIfMatchCondition(index.ETag));
+            }
+            catch (CloudException e) when (e.IsAccessConditionFailed())
+            {
+                // If accessCondition fails, GET the latest version, re-apply the change, and update
+                index = serviceClient.Indexes.Get("hotels");
+                index = EnableSynonymsInIndex(index);
+
+                serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.GenerateIfMatchCondition(index.ETag));
+            }
+        }
+
+        private static Index EnableSynonymsInIndex(Index index)
+        {
             index.Fields.First(f => f.Name == "category").SynonymMaps = new[] { "desc-synonymmap" };
             index.Fields.First(f => f.Name == "tags").SynonymMaps = new[] { "desc-synonymmap" };
-
-            serviceClient.Indexes.CreateOrUpdate(index);
+            return index;
         }
 
         private static void UploadSynonyms(SearchServiceClient serviceClient)
