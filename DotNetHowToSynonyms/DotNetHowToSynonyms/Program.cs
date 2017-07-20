@@ -91,21 +91,25 @@ namespace AzureSearch.SDKHowToSynonyms
 
         private static void EnableSynonymsInHotelsIndexSafely(SearchServiceClient serviceClient)
         {
-            Index index = serviceClient.Indexes.Get("hotels");
-            index = AddSynonymMapsToFields(index);
+            int MaxNumTries = 3;
 
-            try
+            for (int i = 0; i < MaxNumTries; ++i)
             {
-                // The IfMatchCondition ensure that the index is updated only if the ETags match.
-                serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.GenerateIfMatchCondition(index.ETag));
-            }
-            catch (CloudException e) when (e.IsAccessConditionFailed())
-            {
-                // If accessCondition fails, GET the latest version, re-apply the change, and update
-                index = serviceClient.Indexes.Get("hotels");
-                index = AddSynonymMapsToFields(index);
+                try
+                {
+                    Index index = serviceClient.Indexes.Get("hotels");
+                    index = AddSynonymMapsToFields(index);
 
-                serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.GenerateIfMatchCondition(index.ETag));
+                    // The IfNotChanged condition ensures that the index is updated only if the ETags match.
+                    serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.IfNotChanged(index));
+
+                    Console.WriteLine("Updated the index successfully.\n");
+                    break;
+                }
+                catch (CloudException e) when (e.IsAccessConditionFailed())
+                {
+                    Console.WriteLine("Index update failed : {0}.\n", e.Message);
+                }
             }
         }
 
