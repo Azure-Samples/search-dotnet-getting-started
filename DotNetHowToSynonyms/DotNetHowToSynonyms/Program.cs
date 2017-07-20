@@ -108,7 +108,7 @@ namespace AzureSearch.SDKHowToSynonyms
                 }
                 catch (CloudException e) when (e.IsAccessConditionFailed())
                 {
-                    Console.WriteLine("Index update failed : {0}.\n", e.Message);
+                    Console.WriteLine($"Index update failed : {e.Message}. Attempt({i}/{MaxNumTries}).\n");
                 }
             }
         }
