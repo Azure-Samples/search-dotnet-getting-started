@@ -20,7 +20,7 @@ The second sample DotNetHowToIndexers is a simple .NET Core console application 
   * Azure Table Storage
   * Azure Cosmos DB
 
-The second sample DotNetHowToSynonyms demonstrates how to incorporate the Synonyms feature in your application step by step:
+The third sample DotNetHowToSynonyms demonstrates how to incorporate the Synonyms feature in your application step by step:
 
 * Create an Azure Search index
 * Search documents using terms that do not appear in the indexed documents

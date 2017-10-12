@@ -94,6 +94,12 @@ namespace AzureSearch.SDKHowTo
 
             SearchServiceClient serviceClient = CreateSearchServiceClient(configuration);
 
+            Console.WriteLine("Deleting index...");
+            DeleteIndexIfExists(serviceClient);
+
+            Console.WriteLine("Creating index...");
+            CreateIndex(serviceClient);
+
             string option = args[0];
             string indexerName;
             if (option.Equals(AzureSqlOption, StringComparison.OrdinalIgnoreCase))
@@ -113,12 +119,6 @@ namespace AzureSearch.SDKHowTo
                 Usage();
                 return;
             }
-
-            Console.WriteLine("Deleting index...");
-            DeleteIndexIfExists(serviceClient);
-
-            Console.WriteLine("Creating index...");
-            CreateIndex(serviceClient);
 
             Console.WriteLine("Running indexer...");
             serviceClient.Indexers.Run(indexerName);
@@ -190,10 +190,6 @@ namespace AzureSearch.SDKHowTo
             return azureCosmosDbIndexer.Name;
         }
 
-        /// <summary>
-        /// Creates the SearchServiceClient used to make API requests against
-        /// your Azure Search service.
-        /// </summary>
         private static SearchServiceClient CreateSearchServiceClient(IConfigurationRoot configuration)
         {
             string searchServiceName = configuration["SearchServiceName"];
@@ -203,20 +199,14 @@ namespace AzureSearch.SDKHowTo
             return serviceClient;
         }
 
-        /// <summary>
-        /// Delete an Azure Search index for the Hotel data type, if it exists.
-        /// </summary>
         private static void DeleteIndexIfExists(SearchServiceClient serviceClient)
         {
             if (serviceClient.Indexes.Exists(IndexName))
             {
-                serviceClient.Indexes.Delete(IndexName);
+                serviceClient.Indexes.DeleteAsync(IndexName).Wait();
             }
         }
 
-        /// <summary>
-        /// Creates an Azure Search index for the Hotel data type.
-        /// </summary>
         private static void CreateIndex(SearchServiceClient serviceClient)
         {
             var definition = new Index()
@@ -225,12 +215,9 @@ namespace AzureSearch.SDKHowTo
                 Fields = FieldBuilder.BuildForType<Hotel>()
             };
 
-            serviceClient.Indexes.Create(definition);
+            serviceClient.Indexes.CreateAsync(definition).Wait();
         }
 
-        /// <summary>
-        /// Deletes an Azure Search data source with the given name, if it exists.
-        /// </summary>
         private static void DeleteDataSourceIfExists(SearchServiceClient serviceClient, string dataSourceName)
         {
             if (serviceClient.DataSources.Exists(dataSourceName))
@@ -239,9 +226,6 @@ namespace AzureSearch.SDKHowTo
             }
         }
 
-        /// <summary>
-        /// Creates an Azure Search indexer for the given data source with the given name.
-        /// </summary>
         private static Indexer CreateIndexer(SearchServiceClient serviceClient, string dataSourceName, string indexerName)
         {
             Indexer indexer = new Indexer
@@ -254,9 +238,6 @@ namespace AzureSearch.SDKHowTo
             return serviceClient.Indexers.Create(indexer);
         }
 
-        /// <summary>
-        /// Deletes an Azure Search indexer if it exists.
-        /// </summary>
         private static void DeleteIndexerIfExists(SearchServiceClient serviceClient, string indexerName)
         {
             if (serviceClient.Indexers.Exists(indexerName))
@@ -279,11 +260,8 @@ namespace AzureSearch.SDKHowTo
                 name: AzureSqlDataSourceName,
                 sqlConnectionString: configuration[AzureSqlConnectionStringProperty],
                 tableOrViewName: AzureSqlTableName,
-                changeDetectionPolicy: new HighWaterMarkChangeDetectionPolicy
-                {
-                    HighWaterMarkColumnName = AzureSqlHighWaterMarkColumnName
-                },
                 deletionDetectionPolicy: SoftDeleteColumnPolicy);
+            azureSqlDataSource.DataChangeDetectionPolicy = new SqlIntegratedChangeTrackingPolicy();
             return serviceClient.DataSources.Create(azureSqlDataSource);
         }
 
