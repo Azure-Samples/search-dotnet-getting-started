@@ -103,6 +103,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Result.cs" />
     <Compile Include="SecuredFiles.cs" />
   </ItemGroup>
   <ItemGroup>
