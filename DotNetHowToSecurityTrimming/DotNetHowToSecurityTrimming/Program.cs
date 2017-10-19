@@ -65,6 +65,7 @@ namespace DotNetHowToSecurityTrimming
             List<string> groups = CreateUsersAndGroups().Result;
 
             // Create a cache that contains the users and the list of groups they are part of
+            Console.WriteLine("Refresh cache...\n");
             RefreshCache();
 
             // Create an HTTP reference to the catalog index
@@ -115,7 +116,7 @@ namespace DotNetHowToSecurityTrimming
                 {
                     try
                     {
-                        // Attempts to acquire the access token from cache
+                        // Attempt to acquire the access token from cache
                         result = app.AcquireTokenSilentAsync(scopes, app.Users.FirstOrDefault()).Result;
                     }
                     catch (MsalClientException ex)
@@ -140,12 +141,12 @@ namespace DotNetHowToSecurityTrimming
         private static async void RefreshCache()
         {
             HttpClient client = new HttpClient();
-
+            // Get all the groups for the existing users
             string requestContent = BuildBatchRequest();
-            //_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IkFRQUJBQUFBQUFCSGg0a21TX2FLVDVYcmp6eFJBdEh6NHhGR3dzYkNJRlJySHYyT0RzMlZkLXR0b0V1MHp5ME42ZWZzbURUeDZPQl81X3l4ZVRjTDVTWDhwRVRjVkZrQzdtZUJSeGpFa0ZsSzJ3SUpDNzBjYVNBQSIsImFsZyI6IlJTMjU2IiwieDV0IjoiMktWY3V6cUFpZE9McVdTYW9sN3dnRlJHQ1lvIiwia2lkIjoiMktWY3V6cUFpZE9McVdTYW9sN3dnRlJHQ1lvIn0.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8xZmQ2NjM3MC1mZTU3LTQ5OWQtYmZkMy1iYWRlOWU4OTZmZTgvIiwiaWF0IjoxNTA4MTk5MDQ1LCJuYmYiOjE1MDgxOTkwNDUsImV4cCI6MTUwODIwMjk0NSwiYWNyIjoiMSIsImFpbyI6IkFTUUEyLzhHQUFBQXFxOEtwN011TXg1T1NNZmh2Ujk2N2ZESDRnWDhLMFl1M016d3I1NitpYUk9IiwiYW1yIjpbInB3ZCJdLCJhcHBfZGlzcGxheW5hbWUiOiJyZXZpdGFsYnRlc3R0b2tlbjIiLCJhcHBpZCI6ImExYjZmZjY2LWQwODctNDJkZC1hZjk5LTdkYWI1YjQzZTU2YiIsImFwcGlkYWNyIjoiMCIsImRldmljZWlkIjoiZDAzN2I5YTQtZTU0Zi00ZTdmLWI4N2ItOTA4YjVkZDhkNzkzIiwiZV9leHAiOjI2MjgwMCwiZmFtaWx5X25hbWUiOiJCYXJsZXR6IiwiZ2l2ZW5fbmFtZSI6IlJldml0YWwiLCJpcGFkZHIiOiIxNjcuMjIwLjAuMTk0IiwibmFtZSI6IlJldml0YWwgQmFybGV0eiIsIm9pZCI6ImY2YWUyOGI5LWRhOWItNDNlOC05YjUyLTE4OGE5N2RmNmEzOSIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzM0ZGRkE0MEJBMEFDIiwic2NwIjoiRGlyZWN0b3J5LkFjY2Vzc0FzVXNlci5BbGwgRGlyZWN0b3J5LlJlYWQuQWxsIERpcmVjdG9yeS5SZWFkV3JpdGUuQWxsIEdyb3VwLlJlYWQuQWxsIFVzZXIuUmVhZCIsInNpZ25pbl9zdGF0ZSI6WyJrbXNpIl0sInN1YiI6ImljNnV2Ni1rc3FwOFNzV1VJblExajYtZHNtRzFES1praTVoQlhtcFZKUFEiLCJ0aWQiOiIxZmQ2NjM3MC1mZTU3LTQ5OWQtYmZkMy1iYWRlOWU4OTZmZTgiLCJ1bmlxdWVfbmFtZSI6InJldml0YWxiQHJldml0YWxzLm9ubWljcm9zb2Z0LmNvbSIsInVwbiI6InJldml0YWxiQHJldml0YWxzLm9ubWljcm9zb2Z0LmNvbSIsInV0aSI6InNFZnRWRFVJSlVLdUdzeDc4cGRKQUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbIjYyZTkwMzk0LTY5ZjUtNDIzNy05MTkwLTAxMjE3NzE0NWUxMCJdfQ.IErAycrSRgZG-PallPOYJNS_jo_6h_KDuzTEhhbweCq7OYEGEFqrachF3H5ZjiT75LKwyaCm7zXMfqB4L76xt_EykjD7epKegeEIMHvGnWLYt8E7C_Wg2egmV375EFCi6HFaGfVmSSfOufsbJevSAiSPhn7wjFnGnIzGSYD3fnCWC9IVX5__ceec-gf98d-xWXaUWopCMaxaMKwIEUNwSewuVQHE-ayJhwNDU4tUIGw1msnbC5PzpUPkkAeWSP1joV3FqNeiUjYuSdpLMWt9Uw5gGEsx6v1qlwlIVInRBsN792T19Gx35FB9COI6KZ9jo_h2UY0b0eVJbhR2DiAHOQ";
-            string responseString = await GetResponseContent(client, requestContent);
+            string responseString = await SendRequestAndGetResponse(client, requestContent);
 
             Result data = JsonConvert.DeserializeObject<Result>(responseString);
+            // Clear existing cache as new groups were retrieved
             _groupsCache.Clear();
             for (int i = 0; i < data.Responses.Count(); i++)
             {
@@ -164,7 +165,7 @@ namespace DotNetHowToSecurityTrimming
             }
         }
 
-        private static async Task<string> GetResponseContent(HttpClient client, string requestContent)
+        private static async Task<string> SendRequestAndGetResponse(HttpClient client, string requestContent)
         {
             client.DefaultRequestHeaders.Add("Authorization", string.Format("bearer {0}", _token));
             var stringContent = new StringContent(requestContent, Encoding.UTF8, "application/json");
@@ -185,7 +186,6 @@ namespace DotNetHowToSecurityTrimming
                 }},";
 
             string requestsBody = null;
-            //requestsBody += string.Format(requestsBodyFormat, "3", "revitalb@revitals.onmicrosoft.com");
             for (int i = 0; i < UsersPrincipalNameGroupA.Count; i++)
             {
                 requestsBody += string.Format(requestsBodyFormat, i, UsersPrincipalNameGroupA[i]);
@@ -348,18 +348,20 @@ namespace DotNetHowToSecurityTrimming
                 group.SecurityEnabled = true;
                 group.MailEnabled = false;
                 group.MailNickname = "group2";
-                newGroup = await _graph.Groups.Request().AddAsync(group);
                 // Create AAD group
+                newGroup = await _graph.Groups.Request().AddAsync(group);
                 groups.Add(newGroup.Id);
 
-                user = new User();
-                user.GivenName = "Third User";
-                user.Surname = "User3";
-                user.MailNickname = "User3";
-                user.DisplayName = "Third User";
-                user.UserPrincipalName = UsersPrincipalNameGroupB[0];
-                user.PasswordProfile = new PasswordProfile() { Password = "Test3Test" };
-                user.AccountEnabled = true;
+                user = new User()
+                {
+                    GivenName = "Third User",
+                    Surname = "User3",
+                    MailNickname = "User3",
+                    DisplayName = "Third User",
+                    UserPrincipalName = UsersPrincipalNameGroupB[0],
+                    PasswordProfile = new PasswordProfile() { Password = "Test3Test" },
+                    AccountEnabled = true
+                };
                 // Create AAD user
                 newUSer = await _graph.Users.Request().AddAsync(user);
                 // Associate user with group
@@ -378,10 +380,12 @@ namespace DotNetHowToSecurityTrimming
             List<string> groups = new List<string>();
             try
             {
-                var allUserGroupsRequest = _graph.Users["revitalb@revitals.onmicrosoft.com"].MemberOf.Request();
+                // Gets the request builder for MemberOf and build the request
+                var allUserGroupsRequest = _graph.Users[userPrincipalName].MemberOf.Request();
 
                 while (allUserGroupsRequest != null)
                 {
+                    // Invoke the get request
                     var allUserGroups = await allUserGroupsRequest.GetAsync();
                     foreach (Group group in allUserGroups)
                     {
