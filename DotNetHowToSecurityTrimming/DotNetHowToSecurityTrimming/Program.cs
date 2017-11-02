@@ -26,7 +26,6 @@ namespace DotNetHowToSecurityTrimming
         public static string ClientId;
 
         private static List<string> UsersPrincipalNameGroupA;
-        private static List<string> UsersPrincipalNameGroupB;
 
         private static ISearchServiceClient _searchClient;
         private static ISearchIndexClient _indexClient;
@@ -56,6 +55,7 @@ namespace DotNetHowToSecurityTrimming
 
             // AAD Initialization
             _graph = CreateGraphServiceClient();
+            var a = GetGroupIdsForUser("fdfds").Result;
 
             // Create a group, a user and associate both
             List<string> groups = CreateUsersAndGroups().Result;
@@ -99,12 +99,12 @@ namespace DotNetHowToSecurityTrimming
         private static GraphServiceClient CreateGraphServiceClient()
         {
             PublicClientApplication app = new PublicClientApplication(ClientId);
-            string[] scopes = { "User.Read", "Group.Read.All", "Directory.Read.All", "Directory.AccessAsUser.All", "Directory.ReadWrite.All" };
+            string[] scopes = { "User.ReadWrite.All", "Group.ReadWrite.All", "Directory.ReadWrite.All" };
 
             // Instantiate the Microsoft Graph, and provide a way to acquire the token. If token expires, it will
             // be acquired again
             return new GraphServiceClient(new DelegateAuthenticationProvider(
-            (requestMessage) =>
+            async (requestMessage) =>
             {
                 AuthenticationResult result = null;
                 // If a user has already signed-in, we try first to acquire the token silently, and then if this fails
@@ -115,24 +115,23 @@ namespace DotNetHowToSecurityTrimming
                     try
                     {
                         // Attempts to acquire the access token from cache
-                        result = app.AcquireTokenSilentAsync(scopes, user).Result;
+                        result = await app.AcquireTokenSilentAsync(scopes, user);
                     }
                     catch (MsalClientException ex)
                     {
                         if (ex.ErrorCode == "interaction_required")
                         {
                             // Interactive request to acquire token
-                            result = app.AcquireTokenAsync(scopes).Result;
+                            result = await app.AcquireTokenAsync(scopes);
                         }
                     }
                 }
                 else
                 {
-                    result = app.AcquireTokenAsync(scopes).Result;
+                    result = await app.AcquireTokenAsync(scopes);
                 }
                 _token = result.AccessToken;
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", _token);
-                return Task.FromResult(0);
             }));
         }
 
@@ -207,7 +206,7 @@ namespace DotNetHowToSecurityTrimming
 
             results = _indexClient.Documents.Search<SecuredFiles>("*", parameters);
 
-            Console.WriteLine("Results: {0} : {1}", results.Results.Select(r => r.Document));
+            Console.WriteLine("Results for groups '{0}' : {1}", _groupsCache[user], results.Results.Select(r => r.Document));
         }
 
         private static void IndexDocuments(string indexName, List<string> groups)
@@ -340,11 +339,13 @@ namespace DotNetHowToSecurityTrimming
                 // Associate user with group
                 await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
 
-                group = new Group();
-                group.DisplayName = "My Second Prog Group";
-                group.SecurityEnabled = true;
-                group.MailEnabled = false;
-                group.MailNickname = "group2";
+                group = new Group()
+                {
+                    DisplayName = "My Second Prog Group",
+                    SecurityEnabled = true,
+                    MailEnabled = false,
+                    MailNickname = "group2"
+                };
                 // Create AAD group
                 newGroup = await _graph.Groups.Request().AddAsync(group);
                 groups.Add(newGroup.Id);
@@ -378,16 +379,13 @@ namespace DotNetHowToSecurityTrimming
             try
             {
                 // Gets the request builder for MemberOf and build the request
-                var allUserGroupsRequest = _graph.Users[userPrincipalName].MemberOf.Request();
+                var allUserGroupsRequest = _graph.Users[userPrincipalName].GetMemberGroups(true).Request();
 
                 while (allUserGroupsRequest != null)
                 {
                     // Invoke the get request
-                    var allUserGroups = await allUserGroupsRequest.GetAsync();
-                    foreach (Group group in allUserGroups)
-                    {
-                        groups.Add(group.Id);
-                    }
+                    var allUserGroups = await allUserGroupsRequest.PostAsync();
+                    groups = allUserGroups.Select(g => g).ToList();
                     allUserGroupsRequest = allUserGroups.NextPageRequest;
                 }
             }
