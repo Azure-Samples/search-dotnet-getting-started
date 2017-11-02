@@ -14,14 +14,8 @@ public partial class SecuredFiles
     [IsFilterable]
     public string FileId { get; set; }
 
-    [IsSearchable, IsFilterable, IsSortable]
+    [IsFilterable, IsSearchable, IsSortable]
     public string Name { get; set; }
-
-    [IsFilterable, IsSortable, IsFacetable]
-    public int Size { get; set; }
-
-    [IsFilterable, IsSortable, IsFacetable]
-    public string Type { get; set; }
 
     [IsFilterable]
     public string[] GroupIds { get; set; }

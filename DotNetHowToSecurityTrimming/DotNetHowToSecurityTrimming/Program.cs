@@ -45,14 +45,10 @@ namespace DotNetHowToSecurityTrimming
             UsersPrincipalNameGroupA = new List<string>()
             {
                 String.Format("user1@{0}", tenant),
-                String.Format("user2@{0}", tenant)
-            };
-
-            UsersPrincipalNameGroupB = new List<string>()
-            {
+                String.Format("user2@{0}", tenant),
                 String.Format("user3@{0}", tenant)
             };
-
+            
             // Azure Search Initialization
             string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
             string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
@@ -71,7 +67,7 @@ namespace DotNetHowToSecurityTrimming
             _searchClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
             _indexClient = new SearchIndexClient(searchServiceName, indexName, new SearchCredentials(apiKey));
 
-            if (DeleteIndexingResources(indexName))
+            if (DeleteIndex(indexName))
             {
                 Console.WriteLine("Creating index...\n");
                 CreateIndex(indexName);
@@ -110,13 +106,15 @@ namespace DotNetHowToSecurityTrimming
             (requestMessage) =>
             {
                 AuthenticationResult result = null;
-                var u = app.Users.FirstOrDefault();
-                if (u != null)
+                // If a user has already signed-in, we try first to acquire the token silently, and then if this fails
+                // we try to acquire it with a user interaction.
+                var user = app.Users.FirstOrDefault();
+                if (user != null)
                 {
                     try
                     {
                         // Attempts to acquire the access token from cache
-                        result = app.AcquireTokenSilentAsync(scopes, app.Users.FirstOrDefault()).Result;
+                        result = app.AcquireTokenSilentAsync(scopes, user).Result;
                     }
                     catch (MsalClientException ex)
                     {
@@ -142,7 +140,6 @@ namespace DotNetHowToSecurityTrimming
             HttpClient client = new HttpClient();
 
             string requestContent = BuildBatchRequest();
-            //_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IkFRQUJBQUFBQUFCSGg0a21TX2FLVDVYcmp6eFJBdEh6NHhGR3dzYkNJRlJySHYyT0RzMlZkLXR0b0V1MHp5ME42ZWZzbURUeDZPQl81X3l4ZVRjTDVTWDhwRVRjVkZrQzdtZUJSeGpFa0ZsSzJ3SUpDNzBjYVNBQSIsImFsZyI6IlJTMjU2IiwieDV0IjoiMktWY3V6cUFpZE9McVdTYW9sN3dnRlJHQ1lvIiwia2lkIjoiMktWY3V6cUFpZE9McVdTYW9sN3dnRlJHQ1lvIn0.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8xZmQ2NjM3MC1mZTU3LTQ5OWQtYmZkMy1iYWRlOWU4OTZmZTgvIiwiaWF0IjoxNTA4MTk5MDQ1LCJuYmYiOjE1MDgxOTkwNDUsImV4cCI6MTUwODIwMjk0NSwiYWNyIjoiMSIsImFpbyI6IkFTUUEyLzhHQUFBQXFxOEtwN011TXg1T1NNZmh2Ujk2N2ZESDRnWDhLMFl1M016d3I1NitpYUk9IiwiYW1yIjpbInB3ZCJdLCJhcHBfZGlzcGxheW5hbWUiOiJyZXZpdGFsYnRlc3R0b2tlbjIiLCJhcHBpZCI6ImExYjZmZjY2LWQwODctNDJkZC1hZjk5LTdkYWI1YjQzZTU2YiIsImFwcGlkYWNyIjoiMCIsImRldmljZWlkIjoiZDAzN2I5YTQtZTU0Zi00ZTdmLWI4N2ItOTA4YjVkZDhkNzkzIiwiZV9leHAiOjI2MjgwMCwiZmFtaWx5X25hbWUiOiJCYXJsZXR6IiwiZ2l2ZW5fbmFtZSI6IlJldml0YWwiLCJpcGFkZHIiOiIxNjcuMjIwLjAuMTk0IiwibmFtZSI6IlJldml0YWwgQmFybGV0eiIsIm9pZCI6ImY2YWUyOGI5LWRhOWItNDNlOC05YjUyLTE4OGE5N2RmNmEzOSIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzM0ZGRkE0MEJBMEFDIiwic2NwIjoiRGlyZWN0b3J5LkFjY2Vzc0FzVXNlci5BbGwgRGlyZWN0b3J5LlJlYWQuQWxsIERpcmVjdG9yeS5SZWFkV3JpdGUuQWxsIEdyb3VwLlJlYWQuQWxsIFVzZXIuUmVhZCIsInNpZ25pbl9zdGF0ZSI6WyJrbXNpIl0sInN1YiI6ImljNnV2Ni1rc3FwOFNzV1VJblExajYtZHNtRzFES1praTVoQlhtcFZKUFEiLCJ0aWQiOiIxZmQ2NjM3MC1mZTU3LTQ5OWQtYmZkMy1iYWRlOWU4OTZmZTgiLCJ1bmlxdWVfbmFtZSI6InJldml0YWxiQHJldml0YWxzLm9ubWljcm9zb2Z0LmNvbSIsInVwbiI6InJldml0YWxiQHJldml0YWxzLm9ubWljcm9zb2Z0LmNvbSIsInV0aSI6InNFZnRWRFVJSlVLdUdzeDc4cGRKQUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbIjYyZTkwMzk0LTY5ZjUtNDIzNy05MTkwLTAxMjE3NzE0NWUxMCJdfQ.IErAycrSRgZG-PallPOYJNS_jo_6h_KDuzTEhhbweCq7OYEGEFqrachF3H5ZjiT75LKwyaCm7zXMfqB4L76xt_EykjD7epKegeEIMHvGnWLYt8E7C_Wg2egmV375EFCi6HFaGfVmSSfOufsbJevSAiSPhn7wjFnGnIzGSYD3fnCWC9IVX5__ceec-gf98d-xWXaUWopCMaxaMKwIEUNwSewuVQHE-ayJhwNDU4tUIGw1msnbC5PzpUPkkAeWSP1joV3FqNeiUjYuSdpLMWt9Uw5gGEsx6v1qlwlIVInRBsN792T19Gx35FB9COI6KZ9jo_h2UY0b0eVJbhR2DiAHOQ";
             string responseString = await GetResponseContent(client, requestContent);
 
             Result data = JsonConvert.DeserializeObject<Result>(responseString);
@@ -185,7 +182,6 @@ namespace DotNetHowToSecurityTrimming
                 }},";
 
             string requestsBody = null;
-            //requestsBody += string.Format(requestsBodyFormat, "3", "revitalb@revitals.onmicrosoft.com");
             for (int i = 0; i < UsersPrincipalNameGroupA.Count; i++)
             {
                 requestsBody += string.Format(requestsBodyFormat, i, UsersPrincipalNameGroupA[i]);
@@ -209,42 +205,35 @@ namespace DotNetHowToSecurityTrimming
 
             results = _indexClient.Documents.Search<SecuredFiles>("*", parameters);
 
-            Console.WriteLine("Results: {0}", results.Results.Select(r => r.Document));
+            Console.WriteLine("Results: {0} : {1}", results.Results.Select(r => r.Document));
         }
 
         private static void IndexDocuments(string indexName, List<string> groups)
         {
-            var actions =
-                new IndexAction<SecuredFiles>[]
-                {
-                    IndexAction.Upload(
-                        new SecuredFiles()
-                        {
-                            FileId = "11",
-                            Size = 126,
-                            Name = "secured_file_a",
-                            Type = "txt",
-                            GroupIds = new[] { groups[0] }
-                        }),
-                    IndexAction.Upload(
-                        new SecuredFiles()
-                        {
-                            FileId = "12",
-                            Size = 1266,
-                            Name = "secured_file_b",
-                            Type = "txt",
-                            GroupIds = new[] { groups[0] }
-                        }),
-                    IndexAction.Upload(
-                        new SecuredFiles()
-                        {
-                            FileId = "13",
-                            Size = 140,
-                            Name = "secured_file_c",
-                            Type = "txt",
-                            GroupIds = new[] { groups[1] }
-                        })
-                };
+            var actions = new IndexAction<SecuredFiles>[]
+                            {
+                                IndexAction.Upload(
+                                    new SecuredFiles()
+                                    {
+                                        FileId = "1",
+                                        Name = "secured_file_a",
+                                        GroupIds = new[] { groups[0] }
+                                    }),
+                                IndexAction.Upload(
+                                    new SecuredFiles()
+                                    {
+                                        FileId = "2",
+                                        Name = "secured_file_b",
+                                        GroupIds = new[] { groups[0] }
+                                    }),
+                                IndexAction.Upload(
+                                    new SecuredFiles()
+                                    {
+                                        FileId = "3",
+                                        Name = "secured_file_c",
+                                        GroupIds = new[] { groups[1] }
+                                    })
+                            };
 
             var batch = IndexBatch.New(actions);
 
@@ -266,7 +255,7 @@ namespace DotNetHowToSecurityTrimming
             Thread.Sleep(2000);
         }
 
-        private static bool DeleteIndexingResources(string indexName)
+        private static bool DeleteIndex(string indexName)
         {
             try
             {
@@ -308,58 +297,69 @@ namespace DotNetHowToSecurityTrimming
 
             try
             {
-                Group group = new Group();
-                group.DisplayName = "My First Prog Group";
-                group.SecurityEnabled = true;
-                group.MailEnabled = false;
-                group.MailNickname = "group1";
+                Group group = new Group()
+                {
+                    DisplayName = "My First Prog Group",
+                    SecurityEnabled = true,
+                    MailEnabled = false,
+                    MailNickname = "group1"
+                };
                 // Create AAD group
                 Group newGroup = await _graph.Groups.Request().AddAsync(group);
                 groups.Add(newGroup.Id);
 
-                User user = new User();
-                user.GivenName = "First User";
-                user.Surname = "User1";
-                user.MailNickname = "User1";
-                user.DisplayName = "First User";
-                user.UserPrincipalName = UsersPrincipalNameGroupA[0];
-                user.PasswordProfile = new PasswordProfile() { Password = "Test1Test" };
-                user.AccountEnabled = true;
+                User user = new User()
+                {
+                    GivenName = "First User",
+                    Surname = "User1",
+                    MailNickname = "User1",
+                    DisplayName = "First User",
+                    UserPrincipalName = "User1@FirstUser.com",
+                    PasswordProfile = new PasswordProfile() { Password = "********" },
+                    AccountEnabled = true
+                };
                 // Create AAD user
                 User newUSer = await _graph.Users.Request().AddAsync(user);
                 // Associate user with group
                 await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
 
-                user = new User();
-                user.GivenName = "Second User";
-                user.Surname = "User2";
-                user.MailNickname = "User2";
-                user.DisplayName = "Second User";
-                user.UserPrincipalName = UsersPrincipalNameGroupA[1];
-                user.PasswordProfile = new PasswordProfile() { Password = "Test2Test" };
-                user.AccountEnabled = true;
+                user = new User()
+                {
+                    GivenName = "Second User",
+                    Surname = "User2",
+                    MailNickname = "User2",
+                    DisplayName = "Second User",
+                    UserPrincipalName = "User2@FirstUser.com",
+                    PasswordProfile = new PasswordProfile() { Password = "********" },
+                    AccountEnabled = true
+                };
                 // Create AAD user
                 newUSer = await _graph.Users.Request().AddAsync(user);
                 // Associate user with group
                 await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
 
-                group = new Group();
-                group.DisplayName = "My Second Prog Group";
-                group.SecurityEnabled = true;
-                group.MailEnabled = false;
-                group.MailNickname = "group2";
+                group = new Group()
+                {
+                    DisplayName = "My Second Prog Group",
+                    SecurityEnabled = true,
+                    MailEnabled = false,
+                    MailNickname = "group2"
+                };
+
                 newGroup = await _graph.Groups.Request().AddAsync(group);
                 // Create AAD group
                 groups.Add(newGroup.Id);
 
-                user = new User();
-                user.GivenName = "Third User";
-                user.Surname = "User3";
-                user.MailNickname = "User3";
-                user.DisplayName = "Third User";
-                user.UserPrincipalName = UsersPrincipalNameGroupB[0];
-                user.PasswordProfile = new PasswordProfile() { Password = "Test3Test" };
-                user.AccountEnabled = true;
+                user = new User()
+                {
+                    GivenName = "Third User",
+                    Surname = "User3",
+                    MailNickname = "User3",
+                    DisplayName = "Third User",
+                    UserPrincipalName = "User3@FirstUser.com",
+                    PasswordProfile = new PasswordProfile() { Password = "********" },
+                    AccountEnabled = true
+                };
                 // Create AAD user
                 newUSer = await _graph.Users.Request().AddAsync(user);
                 // Associate user with group
