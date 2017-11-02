@@ -61,6 +61,7 @@ namespace DotNetHowToSecurityTrimming
             List<string> groups = CreateUsersAndGroups().Result;
 
             // Create a cache that contains the users and the list of groups they are part of
+            Console.WriteLine("Refresh cache...\n");
             RefreshCache();
 
             // Create an HTTP reference to the catalog index
@@ -138,11 +139,12 @@ namespace DotNetHowToSecurityTrimming
         private static async void RefreshCache()
         {
             HttpClient client = new HttpClient();
-
+            // Get all the groups for the existing users
             string requestContent = BuildBatchRequest();
-            string responseString = await GetResponseContent(client, requestContent);
+            string responseString = await SendRequestAndGetResponse(client, requestContent);
 
             Result data = JsonConvert.DeserializeObject<Result>(responseString);
+            // Clear existing cache as new groups were retrieved
             _groupsCache.Clear();
             for (int i = 0; i < data.Responses.Count(); i++)
             {
@@ -161,7 +163,7 @@ namespace DotNetHowToSecurityTrimming
             }
         }
 
-        private static async Task<string> GetResponseContent(HttpClient client, string requestContent)
+        private static async Task<string> SendRequestAndGetResponse(HttpClient client, string requestContent)
         {
             client.DefaultRequestHeaders.Add("Authorization", string.Format("bearer {0}", _token));
             var stringContent = new StringContent(requestContent, Encoding.UTF8, "application/json");
@@ -338,16 +340,13 @@ namespace DotNetHowToSecurityTrimming
                 // Associate user with group
                 await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
 
-                group = new Group()
-                {
-                    DisplayName = "My Second Prog Group",
-                    SecurityEnabled = true,
-                    MailEnabled = false,
-                    MailNickname = "group2"
-                };
-
-                newGroup = await _graph.Groups.Request().AddAsync(group);
+                group = new Group();
+                group.DisplayName = "My Second Prog Group";
+                group.SecurityEnabled = true;
+                group.MailEnabled = false;
+                group.MailNickname = "group2";
                 // Create AAD group
+                newGroup = await _graph.Groups.Request().AddAsync(group);
                 groups.Add(newGroup.Id);
 
                 user = new User()
@@ -378,10 +377,12 @@ namespace DotNetHowToSecurityTrimming
             List<string> groups = new List<string>();
             try
             {
-                var allUserGroupsRequest = _graph.Users["revitalb@revitals.onmicrosoft.com"].MemberOf.Request();
+                // Gets the request builder for MemberOf and build the request
+                var allUserGroupsRequest = _graph.Users[userPrincipalName].MemberOf.Request();
 
                 while (allUserGroupsRequest != null)
                 {
+                    // Invoke the get request
                     var allUserGroups = await allUserGroupsRequest.GetAsync();
                     foreach (Group group in allUserGroups)
                     {
