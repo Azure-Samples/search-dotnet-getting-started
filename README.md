@@ -41,20 +41,11 @@ Lastly, the sample AzureSearchDotNetSample is a more detailed example that demon
 ## Running the DotNetHowToIndexers sample
 
 * Open the DotNetHowToIndexers.csproj project in Visual Studio.
-* Update the appsettings.json with the service and api details of your Azure Search service,
-  along with whatever data source you choose (Azure SQL, Azure Table Storage, or Azure Cosmos DB).
-  * If you are choosing to use Azure SQL, run the `data\hotels.sql` script against your Azure SQL database
-    to populate it with suitable sample data.
-  * If you are choosing to use Azure Table Storage run `powershell data\hotels-table-storage.ps1 -StorageAccountName <Your storage account name> -StorageAccountKey <Your storage account key>.
-    This will automatically create a `hotels` table under your storage account with the data set in `data\hotels.json`.
-  * If you are choosing to use Azure Cosmos DB, upload `data\hotels.json` to a Cosmos DB collection of your choice.
-    Follow the instructions at https://docs.microsoft.com/en-us/azure/cosmos-db/import-data#JSON.
-* Compile and Run the project, specifying the correct command line parameter for which data source you are using:
-  * AzureSQL for Azure SQL
-  * AzureTableStorage for Azure Table Storage
-  * AzureCosmosDB for Azure Cosmos DB
+* Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database.
+* Run the `data\hotels.sql` script against your Azure SQL database.
+* Compile and Run the project using Visual Studio 2017.
 * Alternatively, download the .NET Core SDK at https://www.microsoft.com/net/core and
-  issue a `dotnet run <DataSource>` command from the DotNetHowToIndexers directory.
+  issue a `dotnet run` command from the DotNetHowToIndexers directory.
 
 ## Running the DotNetHowToSynonyms sample
 
