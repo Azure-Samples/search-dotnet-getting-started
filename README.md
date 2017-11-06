@@ -15,10 +15,7 @@ This sample includes three projects that are meant to help when getting started 
 The second sample DotNetHowToIndexers is a simple .NET Core console application that shows how to:
 
 * Create and Delete an Azure Search index
-* Create an Azure Search indexer for the following types of data sources:
-  * Azure SQL
-  * Azure Table Storage
-  * Azure Cosmos DB
+* Create an Azure Search indexer for Azure SQL
 
 The third sample DotNetHowToSynonyms demonstrates how to incorporate the Synonyms feature in your application step by step:
 
