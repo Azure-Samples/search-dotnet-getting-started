@@ -17,19 +17,19 @@ namespace AzureSearch.SDKHowTo
 
             if (configuration["SearchServiceName"] == "Put your search service name here")
             {
-                Console.Error.WriteLine("Specify SearchServiceName in appconfig.json");
+                Console.Error.WriteLine("Specify SearchServiceName in appsettings.json");
                 Environment.Exit(-1);
             }
 
             if (configuration["SearchServiceAdminApiKey"] == "Put your primary or secondary API key here")
             {
-                Console.Error.WriteLine("Specify SearchServiceAdminApiKey in appconfig.json");
+                Console.Error.WriteLine("Specify SearchServiceAdminApiKey in appsettings.json");
                 Environment.Exit(-1);
             }
 
-            if (configuration["AzureSqlConnectionString"] == "Put your Azure SQL database connection string here")
+            if (configuration["AzureSQLConnectionString"] == "Put your Azure SQL database connection string here")
             {
-                Console.Error.WriteLine("Specify AzureSqlConnectionString in appconfig.json");
+                Console.Error.WriteLine("Specify AzureSQLConnectionString in appsettings.json");
                 Environment.Exit(-1);
             }
 
@@ -59,14 +59,14 @@ namespace AzureSearch.SDKHowTo
             // corresponding document from the search service
             // See this link for more information
             // https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.search.models.softdeletecolumndeletiondetectionpolicy
-            // The sample data set uses Sql integrated change tracking for change detection
+            // The sample data set uses SQL integrated change tracking for change detection
             // This means that when the indexer runs, it will be able to detect which data has
             // changed since the last run using built in change tracking
             // See this link for more information
             // https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-tracking-sql-server
             DataSource dataSource = DataSource.AzureSql(
                 name: "azure-sql",
-                sqlConnectionString: configuration["AzureSqlConnectionString"],
+                sqlConnectionString: configuration["AzureSQLConnectionString"],
                 tableOrViewName: "hotels",
                 deletionDetectionPolicy: new SoftDeleteColumnDeletionDetectionPolicy(
                     softDeleteColumnName: "IsDeleted",
@@ -76,7 +76,7 @@ namespace AzureSearch.SDKHowTo
             // but the connection string may need to be updated if it was changed
             searchService.DataSources.CreateOrUpdateAsync(dataSource).Wait();
 
-            Console.WriteLine("Creating Azure Sql indexer...");
+            Console.WriteLine("Creating Azure SQL indexer...");
             Indexer indexer = new Indexer(
                 name: "azure-sql-indexer",
                 dataSourceName: dataSource.Name,
@@ -95,7 +95,7 @@ namespace AzureSearch.SDKHowTo
 
             // We created the indexer with a schedule, but we also
             // want to run it immediately
-            Console.WriteLine("Running Azure Sql indexer...");
+            Console.WriteLine("Running Azure SQL indexer...");
             searchService.Indexers.RunAsync(indexer.Name).Wait();
 
             Console.WriteLine("Press any key to continue...");
