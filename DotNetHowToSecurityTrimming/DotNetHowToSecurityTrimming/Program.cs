@@ -1,23 +1,15 @@
 ﻿#define HowToExample
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Net.Http.Headers;
+using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
-using Microsoft.Graph;
-using Microsoft.Identity.Client;
-using System.Net.Http;
-using System.Text;
-using System.Collections.Concurrent;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Dynamic;
-using Newtonsoft.Json.Converters;
 
 namespace DotNetHowToSecurityTrimming
 {
@@ -30,16 +22,15 @@ namespace DotNetHowToSecurityTrimming
         private static ISearchServiceClient _searchClient;
         private static ISearchIndexClient _indexClient;
 
-        private static string _token;
-
         private static ConcurrentDictionary<string, List<string>> _groupsCache = new ConcurrentDictionary<string, List<string>>();
-        private static GraphServiceClient _graph;
+        private static MicrosoftGraphHelper _microsoftGraphHelper;
 
         static void Main(string[] args)
         {
             // Application Id as obtained by creating an application from https://apps.dev.microsoft.com
             // See also the guided setup:https://docs.microsoft.com/en-us/azure/active-directory/develop/guidedsetups/active-directory-windesktop
             ClientId = ConfigurationManager.AppSettings["ClientId"];
+            _microsoftGraphHelper = new MicrosoftGraphHelper(ClientId);
             string tenant = ConfigurationManager.AppSettings["Tenant"];
             UsersPrincipalNameGroupA = new List<string>()
             {
@@ -53,12 +44,8 @@ namespace DotNetHowToSecurityTrimming
             string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
             string indexName = "securedfiles";
 
-            // AAD Initialization
-            _graph = CreateGraphServiceClient();
-            var a = GetGroupIdsForUser("fdfds").Result;
-
             // Create a group, a user and associate both
-            List<string> groups = CreateUsersAndGroups().Result;
+            List<string> groups = _microsoftGraphHelper.CreateUsersAndGroups(UsersPrincipalNameGroupA).Result;
 
             // Create a cache that contains the users and the list of groups they are part of
             Console.WriteLine("Refresh cache...\n");
@@ -87,62 +74,21 @@ namespace DotNetHowToSecurityTrimming
             }
         }
 
-        private static void RefreshCacheIfRequired(string user)
+        private static async void RefreshCacheIfRequired(string user)
         {
             if (!_groupsCache.ContainsKey(user))
             {
-                var groups = GetGroupIdsForUser(user).Result;
+                var groups = await _microsoftGraphHelper.GetGroupIdsForUser(user);
                 _groupsCache[user] = groups;
             }
         }
-
-        private static GraphServiceClient CreateGraphServiceClient()
-        {
-            PublicClientApplication app = new PublicClientApplication(ClientId);
-            string[] scopes = { "User.ReadWrite.All", "Group.ReadWrite.All", "Directory.ReadWrite.All" };
-
-            // Instantiate the Microsoft Graph, and provide a way to acquire the token. If token expires, it will
-            // be acquired again
-            return new GraphServiceClient(new DelegateAuthenticationProvider(
-            async (requestMessage) =>
-            {
-                AuthenticationResult result = null;
-                // If a user has already signed-in, we try first to acquire the token silently, and then if this fails
-                // we try to acquire it with a user interaction.
-                var user = app.Users.FirstOrDefault();
-                if (user != null)
-                {
-                    try
-                    {
-                        // Attempts to acquire the access token from cache
-                        result = await app.AcquireTokenSilentAsync(scopes, user);
-                    }
-                    catch (MsalClientException ex)
-                    {
-                        if (ex.ErrorCode == "interaction_required")
-                        {
-                            // Interactive request to acquire token
-                            result = await app.AcquireTokenAsync(scopes);
-                        }
-                    }
-                }
-                else
-                {
-                    result = await app.AcquireTokenAsync(scopes);
-                }
-                _token = result.AccessToken;
-                requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", _token);
-            }));
-        }
-
+        
         private static async void RefreshCache()
         {
             HttpClient client = new HttpClient();
-            // Get all the groups for the existing users
-            string requestContent = BuildBatchRequest();
-            string responseString = await SendRequestAndGetResponse(client, requestContent);
+            string responseString = await _microsoftGraphHelper.SendRequestAndGetResponse(client, UsersPrincipalNameGroupA);
 
-            Result data = JsonConvert.DeserializeObject<Result>(responseString);
+            BatchResult data = JsonConvert.DeserializeObject<BatchResult>(responseString);
             // Clear existing cache as new groups were retrieved
             _groupsCache.Clear();
             for (int i = 0; i < data.Responses.Count(); i++)
@@ -150,7 +96,7 @@ namespace DotNetHowToSecurityTrimming
                 List<string> userGroups = new List<string>();
                 for (int j = 0; j < data.Responses[i].Body.Value.Count(); j++)
                 {
-                    ResponseBodyValue value = data.Responses[i].Body.Value[j];
+                    BatchResponseBodyValue value = data.Responses[i].Body.Value[j];
                     if (value.Type == "#microsoft.graph.group")
                     {
                         userGroups.Add(value.Id);
@@ -160,34 +106,6 @@ namespace DotNetHowToSecurityTrimming
                 string key = UsersPrincipalNameGroupA[id];
                 _groupsCache[key] = userGroups;
             }
-        }
-
-        private static async Task<string> SendRequestAndGetResponse(HttpClient client, string requestContent)
-        {
-            client.DefaultRequestHeaders.Add("Authorization", string.Format("bearer {0}", _token));
-            var stringContent = new StringContent(requestContent, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("https://graph.microsoft.com/beta/$batch", stringContent);
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
-        }
-
-        private static string BuildBatchRequest()
-        {
-            string requestBodyFormat = @"{{ ""requests"": [ {0} ]  }}";
-            string requestsBodyFormat = @"{{
-                    ""id"":""{0}"",
-                    ""method"":""GET"",
-                    ""url"":""users/{1}/memberOf""
-                }},";
-
-            string requestsBody = null;
-            for (int i = 0; i < UsersPrincipalNameGroupA.Count; i++)
-            {
-                requestsBody += string.Format(requestsBodyFormat, i, UsersPrincipalNameGroupA[i]);
-            }
-            return string.Format(requestBodyFormat, requestsBody);
         }
 
         private static void SearchQueryWithFilter(string user)
@@ -290,111 +208,6 @@ namespace DotNetHowToSecurityTrimming
                 Console.WriteLine("Error creating index: {0}\r\n", ex.Message);
                 throw;
             }
-        }
-
-        private static async Task<List<string>> CreateUsersAndGroups()
-        {
-            List<string> groups = new List<string>();
-
-            try
-            {
-                Group group = new Group()
-                {
-                    DisplayName = "My First Prog Group",
-                    SecurityEnabled = true,
-                    MailEnabled = false,
-                    MailNickname = "group1"
-                };
-                // Create AAD group
-                Group newGroup = await _graph.Groups.Request().AddAsync(group);
-                groups.Add(newGroup.Id);
-
-                User user = new User()
-                {
-                    GivenName = "First User",
-                    Surname = "User1",
-                    MailNickname = "User1",
-                    DisplayName = "First User",
-                    UserPrincipalName = "User1@FirstUser.com",
-                    PasswordProfile = new PasswordProfile() { Password = "********" },
-                    AccountEnabled = true
-                };
-                // Create AAD user
-                User newUSer = await _graph.Users.Request().AddAsync(user);
-                // Associate user with group
-                await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
-
-                user = new User()
-                {
-                    GivenName = "Second User",
-                    Surname = "User2",
-                    MailNickname = "User2",
-                    DisplayName = "Second User",
-                    UserPrincipalName = "User2@FirstUser.com",
-                    PasswordProfile = new PasswordProfile() { Password = "********" },
-                    AccountEnabled = true
-                };
-                // Create AAD user
-                newUSer = await _graph.Users.Request().AddAsync(user);
-                // Associate user with group
-                await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
-
-                group = new Group()
-                {
-                    DisplayName = "My Second Prog Group",
-                    SecurityEnabled = true,
-                    MailEnabled = false,
-                    MailNickname = "group2"
-                };
-                // Create AAD group
-                newGroup = await _graph.Groups.Request().AddAsync(group);
-                groups.Add(newGroup.Id);
-
-                user = new User()
-                {
-                    GivenName = "Third User",
-                    Surname = "User3",
-                    MailNickname = "User3",
-                    DisplayName = "Third User",
-                    UserPrincipalName = "User3@FirstUser.com",
-                    PasswordProfile = new PasswordProfile() { Password = "********" },
-                    AccountEnabled = true
-                };
-                // Create AAD user
-                newUSer = await _graph.Users.Request().AddAsync(user);
-                // Associate user with group
-                await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error creating users and groups: {0}\r\n", ex.Message);
-                throw;
-            }
-            return groups;
-        }
-
-        private static async Task<List<string>> GetGroupIdsForUser(string userPrincipalName)
-        {
-            List<string> groups = new List<string>();
-            try
-            {
-                // Gets the request builder for MemberOf and build the request
-                var allUserGroupsRequest = _graph.Users[userPrincipalName].GetMemberGroups(true).Request();
-
-                while (allUserGroupsRequest != null)
-                {
-                    // Invoke the get request
-                    var allUserGroups = await allUserGroupsRequest.PostAsync();
-                    groups = allUserGroups.Select(g => g).ToList();
-                    allUserGroupsRequest = allUserGroups.NextPageRequest;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error retrieving groups: {0}\r\n", ex.Message);
-                throw;
-            }
-            return groups;
         }
     }
 }

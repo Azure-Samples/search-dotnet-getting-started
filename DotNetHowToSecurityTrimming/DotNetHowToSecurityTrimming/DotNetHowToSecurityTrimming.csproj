@@ -101,12 +101,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contract\ResponseBodyValue.cs" />
-    <Compile Include="Contract\ResponseBody.cs" />
-    <Compile Include="Contract\Response.cs" />
+    <Compile Include="Contract\BatchResponse.cs" />
+    <Compile Include="MicrosoftGraphHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Contract\Result.cs" />
     <Compile Include="SecuredFiles.cs" />
   </ItemGroup>
   <ItemGroup>
