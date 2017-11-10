@@ -12,7 +12,12 @@ This sample includes three projects that are meant to help when getting started 
 * Upload Documents to an Azure Search index
 * Search & Filter documents within an index
 
-The second sample DotNetHowToSynonyms demonstrates how to incorporate the Synonyms feature in your application step by step:
+The second sample DotNetHowToIndexers is a simple .NET Core console application that shows how to:
+
+* Create and Delete an Azure Search index
+* Create an Azure Search indexer for Azure SQL
+
+The third sample DotNetHowToSynonyms demonstrates how to incorporate the Synonyms feature in your application step by step:
 
 * Create an Azure Search index
 * Search documents using terms that do not appear in the indexed documents
@@ -29,6 +34,15 @@ Lastly, the sample AzureSearchDotNetSample is a more detailed example that demon
 * Open the DotNetHowTo.sln project in Visual Studio
 * Update the appsettings.json with the service and api details of your Azure Search service
 * Compile and Run the project
+
+## Running the DotNetHowToIndexers sample
+
+* Open the DotNetHowToIndexers.csproj project in Visual Studio.
+* Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database.
+* Run the `data\hotels.sql` script against your Azure SQL database.
+* Compile and Run the project using Visual Studio 2017.
+* Alternatively, download the .NET Core SDK at https://www.microsoft.com/net/core and
+  issue a `dotnet run` command from the DotNetHowToIndexers directory.
 
 ## Running the DotNetHowToSynonyms sample
 
