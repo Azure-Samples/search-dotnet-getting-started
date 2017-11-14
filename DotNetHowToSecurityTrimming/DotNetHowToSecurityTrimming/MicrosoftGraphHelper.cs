@@ -20,18 +20,17 @@ namespace DotNetHowToSecurityTrimming
 
         public MicrosoftGraphHelper(string clientId)
         {
-            _graph = CreateGraphServiceClient();
             _clientId = clientId;
         }
 
-        public GraphServiceClient CreateGraphServiceClient()
+        public void CreateGraphServiceClient()
         {
             PublicClientApplication app = new PublicClientApplication(_clientId);
             string[] scopes = { "User.ReadWrite.All", "Group.ReadWrite.All", "Directory.ReadWrite.All" };
 
             // Instantiate the Microsoft Graph, and provide a way to acquire the token. If token expires, it will
             // be acquired again
-            return new GraphServiceClient(new DelegateAuthenticationProvider(
+            _graph = new GraphServiceClient(new DelegateAuthenticationProvider(
             async (requestMessage) =>
             {
                 AuthenticationResult result = null;
@@ -69,7 +68,13 @@ namespace DotNetHowToSecurityTrimming
             string requestsBodyFormat = @"{{
                     ""id"":""{0}"",
                     ""method"":""POST"",
-                    ""url"":""users/{1}/microsoft.graph.getMemberGroups""
+                    ""url"":""users/{1}/microsoft.graph.getMemberGroups"",
+                    ""body"": {
+                        ""securityEnabledOnly"":true
+                    },
+                    ""headers"": {
+                        ""Content-Type"":""application/json""
+                    }
                 }},";
 
             string requestsBody = null;

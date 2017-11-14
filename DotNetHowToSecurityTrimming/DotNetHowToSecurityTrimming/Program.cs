@@ -17,7 +17,7 @@ namespace DotNetHowToSecurityTrimming
     {
         public static string ClientId;
 
-        private static List<string> UsersPrincipalNameGroupA;
+        private static List<string> UsersPrincipalNameGroup;
 
         private static ISearchServiceClient _searchClient;
         private static ISearchIndexClient _indexClient;
@@ -31,8 +31,9 @@ namespace DotNetHowToSecurityTrimming
             // See also the guided setup:https://docs.microsoft.com/en-us/azure/active-directory/develop/guidedsetups/active-directory-windesktop
             ClientId = ConfigurationManager.AppSettings["ClientId"];
             _microsoftGraphHelper = new MicrosoftGraphHelper(ClientId);
+            _microsoftGraphHelper.CreateGraphServiceClient();
             string tenant = ConfigurationManager.AppSettings["Tenant"];
-            UsersPrincipalNameGroupA = new List<string>()
+            UsersPrincipalNameGroup = new List<string>()
             {
                 String.Format("user1@{0}", tenant),
                 String.Format("user2@{0}", tenant),
@@ -45,7 +46,7 @@ namespace DotNetHowToSecurityTrimming
             string indexName = "securedfiles";
 
             // Create a group, a user and associate both
-            List<string> groups = _microsoftGraphHelper.CreateUsersAndGroups(UsersPrincipalNameGroupA).Result;
+            List<string> groups = _microsoftGraphHelper.CreateUsersAndGroups(UsersPrincipalNameGroup).Result;
 
             // Create a cache that contains the users and the list of groups they are part of
             Console.WriteLine("Refresh cache...\n");
@@ -65,7 +66,7 @@ namespace DotNetHowToSecurityTrimming
             // Index documents with relevant group ids
             IndexDocuments(indexName, groups);
 
-            foreach (var user in UsersPrincipalNameGroupA)
+            foreach (var user in UsersPrincipalNameGroup)
             {
                 // Retrieve user's groups so that a search filter could be built using the groups list
                 Console.WriteLine("Get groups for user {0}...\n", user);
@@ -86,7 +87,7 @@ namespace DotNetHowToSecurityTrimming
         private static async void RefreshCache()
         {
             HttpClient client = new HttpClient();
-            string responseString = await _microsoftGraphHelper.SendRequestAndGetResponse(client, UsersPrincipalNameGroupA);
+            string responseString = await _microsoftGraphHelper.SendRequestAndGetResponse(client, UsersPrincipalNameGroup);
 
             BatchResult data = JsonConvert.DeserializeObject<BatchResult>(responseString);
             // Clear existing cache as new groups were retrieved
@@ -96,14 +97,11 @@ namespace DotNetHowToSecurityTrimming
                 List<string> userGroups = new List<string>();
                 for (int j = 0; j < data.Responses[i].Body.Value.Count(); j++)
                 {
-                    BatchResponseBodyValue value = data.Responses[i].Body.Value[j];
-                    if (value.Type == "#microsoft.graph.group")
-                    {
-                        userGroups.Add(value.Id);
-                    }
+                    string value = data.Responses[i].Body.Value[j];
+                    userGroups.Add(value);
                 }
                 int id = Convert.ToInt32(data.Responses[i].Id);
-                string key = UsersPrincipalNameGroupA[id];
+                string key = UsersPrincipalNameGroup[id];
                 _groupsCache[key] = userGroups;
             }
         }
