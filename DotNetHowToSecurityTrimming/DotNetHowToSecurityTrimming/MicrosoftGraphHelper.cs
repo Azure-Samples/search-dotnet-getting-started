@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Graph;
 using Microsoft.Identity.Client;
+using Newtonsoft.Json;
 
 namespace DotNetHowToSecurityTrimming
 {
@@ -36,6 +37,7 @@ namespace DotNetHowToSecurityTrimming
                 AuthenticationResult result = null;
                 // If a user has already signed-in, we try first to acquire the token silently, and then if this fails
                 // we try to acquire it with a user interaction.
+                // In this sample there is one user that is signed-in and therefore we choose the first element.
                 var user = app.Users.FirstOrDefault();
                 if (user != null)
                 {
@@ -62,19 +64,19 @@ namespace DotNetHowToSecurityTrimming
             }));
         }
 
-        private string BuildBatchRequest(List<string> users)
+        private string BuildGetMemberGroupsRequest(List<string> users)
         {
             string requestBodyFormat = @"{{ ""requests"": [ {0} ]  }}";
             string requestsBodyFormat = @"{{
                     ""id"":""{0}"",
                     ""method"":""POST"",
                     ""url"":""users/{1}/microsoft.graph.getMemberGroups"",
-                    ""body"": {
+                    ""body"": {{
                         ""securityEnabledOnly"":true
-                    },
-                    ""headers"": {
+                    }},
+                    ""headers"": {{
                         ""Content-Type"":""application/json""
-                    }
+                    }}
                 }},";
 
             string requestsBody = null;
@@ -85,97 +87,64 @@ namespace DotNetHowToSecurityTrimming
             return string.Format(requestBodyFormat, requestsBody);
         }
 
-        public async Task<string> SendRequestAndGetResponse(HttpClient client, List<string> users)
-        { 
-            string requestContent = BuildBatchRequest(users);
+        public async Task<Dictionary<string, List<string>>> GetGroupsForUsers(HttpClient client, List<string> users)
+        {
+            string requestContent = BuildGetMemberGroupsRequest(users);
             client.DefaultRequestHeaders.Add("Authorization", string.Format("bearer {0}", _token));
             var stringContent = new StringContent(requestContent, Encoding.UTF8, "application/json");
 
             var response = await client.PostAsync("https://graph.microsoft.com/beta/$batch", stringContent);
 
             var responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
+            return ParseBatchGroupsForUsersResponse(users, responseString);
         }
 
-        public async Task<List<string>> CreateUsersAndGroups(List<string> users)
+        private static Dictionary<string, List<string>> ParseBatchGroupsForUsersResponse(List<string> users, string responseString)
         {
-            List<string> groups = new List<string>();
+            BatchResult data = JsonConvert.DeserializeObject<BatchResult>(responseString);
 
+            Dictionary<string, List<string>> userGroupsMapping = new Dictionary<string, List<string>>();
+            for (int i = 0; i < data.Responses.Count(); i++)
+            {
+                List<string> userGroups = new List<string>();
+                for (int j = 0; j < data.Responses[i].Body.Value.Count(); j++)
+                {
+                    string value = data.Responses[i].Body.Value[j];
+                    userGroups.Add(value);
+                }
+                int id = Convert.ToInt32(data.Responses[i].Id);
+                string key = users[id];
+                userGroupsMapping[key] = userGroups;
+            }
+
+            return userGroupsMapping;
+        }
+
+        public async Task CreateUsersAndGroups(Dictionary<Group, List<User>> groups)
+        {
             try
             {
-                Group group = new Group()
+                for (int i = 0; i < groups.Count; i++)
                 {
-                    DisplayName = "My First Prog Group",
-                    SecurityEnabled = true,
-                    MailEnabled = false,
-                    MailNickname = "group1"
-                };
-                // Create AAD group
-                Group newGroup = await _graph.Groups.Request().AddAsync(group);
-                groups.Add(newGroup.Id);
-
-                User user = new User()
-                {
-                    GivenName = "First User",
-                    Surname = "User1",
-                    MailNickname = "User1",
-                    DisplayName = "First User",
-                    UserPrincipalName = users[0],
-                    PasswordProfile = new PasswordProfile() { Password = "********" },
-                    AccountEnabled = true
-                };
-                // Create AAD user
-                User newUSer = await _graph.Users.Request().AddAsync(user);
-                // Associate user with group
-                await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
-
-                user = new User()
-                {
-                    GivenName = "Second User",
-                    Surname = "User2",
-                    MailNickname = "User2",
-                    DisplayName = "Second User",
-                    UserPrincipalName = users[1],
-                    PasswordProfile = new PasswordProfile() { Password = "********" },
-                    AccountEnabled = true
-                };
-                // Create AAD user
-                newUSer = await _graph.Users.Request().AddAsync(user);
-                // Associate user with group
-                await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
-
-                group = new Group()
-                {
-                    DisplayName = "My Second Prog Group",
-                    SecurityEnabled = true,
-                    MailEnabled = false,
-                    MailNickname = "group2"
-                };
-                // Create AAD group
-                newGroup = await _graph.Groups.Request().AddAsync(group);
-                groups.Add(newGroup.Id);
-
-                user = new User()
-                {
-                    GivenName = "Third User",
-                    Surname = "User3",
-                    MailNickname = "User3",
-                    DisplayName = "Third User",
-                    UserPrincipalName = users[2],
-                    PasswordProfile = new PasswordProfile() { Password = "********" },
-                    AccountEnabled = true
-                };
-                // Create AAD user
-                newUSer = await _graph.Users.Request().AddAsync(user);
-                // Associate user with group
-                await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUSer);
+                    // Create AAD group
+                    KeyValuePair<Group, List<User>> group = groups.ElementAt(i);
+                    Group currentGroup = groups.Keys.ElementAt(i);
+                    Group newGroup = await _graph.Groups.Request().AddAsync(currentGroup);
+                    currentGroup.Id = newGroup.Id;
+                    foreach (var user in group.Value)
+                    {
+                        // Create AAD user
+                        User newUser = await _graph.Users.Request().AddAsync(user);
+                        // Associate user with group
+                        await _graph.Groups[newGroup.Id].Members.References.Request().AddAsync(newUser);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error creating users and groups: {0}\r\n", ex.Message);
                 throw;
             }
-            return groups;
         }
 
         public async Task<List<string>> GetGroupIdsForUser(string userPrincipalName)

@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Newtonsoft.Json;
+using Microsoft.Graph;
 
 namespace DotNetHowToSecurityTrimming
 {
@@ -45,8 +46,10 @@ namespace DotNetHowToSecurityTrimming
             string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
             string indexName = "securedfiles";
 
+            Dictionary<Group, List<User>> groups = CreateGroupsWithUsers();
+
             // Create a group, a user and associate both
-            List<string> groups = _microsoftGraphHelper.CreateUsersAndGroups(UsersPrincipalNameGroup).Result;
+            _microsoftGraphHelper.CreateUsersAndGroups(groups).Wait();
 
             // Create a cache that contains the users and the list of groups they are part of
             Console.WriteLine("Refresh cache...\n");
@@ -64,7 +67,7 @@ namespace DotNetHowToSecurityTrimming
 
             Console.WriteLine("Indexing documents...\n");
             // Index documents with relevant group ids
-            IndexDocuments(indexName, groups);
+            IndexDocuments(indexName, groups.Keys.Select(g => g.Id).ToList());
 
             foreach (var user in UsersPrincipalNameGroup)
             {
@@ -73,6 +76,64 @@ namespace DotNetHowToSecurityTrimming
                 RefreshCacheIfRequired(user);
                 SearchQueryWithFilter(user);
             }
+        }
+
+        private static Dictionary<Group, List<User>> CreateGroupsWithUsers()
+        {
+            Group group = new Group()
+            {
+                DisplayName = "My First Prog Group",
+                SecurityEnabled = true,
+                MailEnabled = false,
+                MailNickname = "group1"
+            };
+
+            User user1 = new User()
+            {
+                GivenName = "First User",
+                Surname = "User1",
+                MailNickname = "User1",
+                DisplayName = "First User",
+                UserPrincipalName = UsersPrincipalNameGroup[0],
+                PasswordProfile = new PasswordProfile() { Password = "********" },
+                AccountEnabled = true
+            };
+            User user2 = new User()
+            {
+                GivenName = "Second User",
+                Surname = "User2",
+                MailNickname = "User2",
+                DisplayName = "Second User",
+                UserPrincipalName = UsersPrincipalNameGroup[1],
+                PasswordProfile = new PasswordProfile() { Password = "********" },
+                AccountEnabled = true
+            };
+
+            List<User> users = new List<User>() { user1, user2 };
+            Dictionary<Group, List<User>> groups = new Dictionary<Group, List<User>>() { { group, users } };
+
+            group = new Group()
+            {
+                DisplayName = "My Second Prog Group",
+                SecurityEnabled = true,
+                MailEnabled = false,
+                MailNickname = "group2"
+            };
+
+            User user3 = new User()
+            {
+                GivenName = "Third User",
+                Surname = "User3",
+                MailNickname = "User3",
+                DisplayName = "Third User",
+                UserPrincipalName = UsersPrincipalNameGroup[2],
+                PasswordProfile = new PasswordProfile() { Password = "********" },
+                AccountEnabled = true
+            };
+
+            groups.Add(group, new List<User>() { user3 });
+
+            return groups;
         }
 
         private static async void RefreshCacheIfRequired(string user)
@@ -87,42 +148,25 @@ namespace DotNetHowToSecurityTrimming
         private static async void RefreshCache()
         {
             HttpClient client = new HttpClient();
-            string responseString = await _microsoftGraphHelper.SendRequestAndGetResponse(client, UsersPrincipalNameGroup);
-
-            BatchResult data = JsonConvert.DeserializeObject<BatchResult>(responseString);
-            // Clear existing cache as new groups were retrieved
-            _groupsCache.Clear();
-            for (int i = 0; i < data.Responses.Count(); i++)
-            {
-                List<string> userGroups = new List<string>();
-                for (int j = 0; j < data.Responses[i].Body.Value.Count(); j++)
-                {
-                    string value = data.Responses[i].Body.Value[j];
-                    userGroups.Add(value);
-                }
-                int id = Convert.ToInt32(data.Responses[i].Id);
-                string key = UsersPrincipalNameGroup[id];
-                _groupsCache[key] = userGroups;
-            }
+            var userGroups = await _microsoftGraphHelper.GetGroupsForUsers(client, UsersPrincipalNameGroup);
+            _groupsCache = new ConcurrentDictionary<string, List<string>>(userGroups);
         }
 
         private static void SearchQueryWithFilter(string user)
         {
-            SearchParameters parameters;
-            DocumentSearchResult<SecuredFiles> results;
             // Using the filter below, the search result will contain all documents, that their GroupIds field contain any one of the 
             // Ids in the groups list
             string filter = String.Format("groupIds/any(p:search.in(p, '{0}'))", string.Join(",", String.Join(",", _groupsCache[user])));
-            parameters =
+            SearchParameters parameters =
                 new SearchParameters()
                 {
                     Filter = filter,
                     Select = new[] { "name" }
                 };
 
-            results = _indexClient.Documents.Search<SecuredFiles>("*", parameters);
+            DocumentSearchResult<SecuredFiles> results = _indexClient.Documents.Search<SecuredFiles>("*", parameters);
 
-            Console.WriteLine("Results for groups '{0}' : {1}", _groupsCache[user], results.Results.Select(r => r.Document));
+            Console.WriteLine("Results for groups '{0}' : {1}", _groupsCache[user], results.Results.Select(r => r.Document.Name));
         }
 
         private static void IndexDocuments(string indexName, List<string> groups)
