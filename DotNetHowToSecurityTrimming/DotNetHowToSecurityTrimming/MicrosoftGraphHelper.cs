@@ -64,7 +64,7 @@ namespace DotNetHowToSecurityTrimming
             }));
         }
 
-        private string BuildGetMemberGroupsRequest(List<string> users)
+        private string BuildGetMemberGroupsRequest(IEnumerable<User> users)
         {
             string requestBodyFormat = @"{{ ""requests"": [ {0} ]  }}";
             string requestsBodyFormat = @"{{
@@ -80,14 +80,14 @@ namespace DotNetHowToSecurityTrimming
                 }},";
 
             string requestsBody = null;
-            for (int i = 0; i < users.Count; i++)
+            for (int i = 0; i < users.Count(); i++)
             {
-                requestsBody += string.Format(requestsBodyFormat, i, users[i]);
+                requestsBody += string.Format(requestsBodyFormat, i, users.ElementAt(i).UserPrincipalName);
             }
             return string.Format(requestBodyFormat, requestsBody);
         }
 
-        public async Task<Dictionary<string, List<string>>> GetGroupsForUsers(HttpClient client, List<string> users)
+        public async Task<Dictionary<string, List<string>>> GetGroupsForUsers(HttpClient client, IEnumerable<User> users)
         {
             string requestContent = BuildGetMemberGroupsRequest(users);
             client.DefaultRequestHeaders.Add("Authorization", string.Format("bearer {0}", _token));
@@ -99,7 +99,7 @@ namespace DotNetHowToSecurityTrimming
             return ParseBatchGroupsForUsersResponse(users, responseString);
         }
 
-        private static Dictionary<string, List<string>> ParseBatchGroupsForUsersResponse(List<string> users, string responseString)
+        private static Dictionary<string, List<string>> ParseBatchGroupsForUsersResponse(IEnumerable<User> users, string responseString)
         {
             BatchResult data = JsonConvert.DeserializeObject<BatchResult>(responseString);
 
@@ -113,7 +113,7 @@ namespace DotNetHowToSecurityTrimming
                     userGroups.Add(value);
                 }
                 int id = Convert.ToInt32(data.Responses[i].Id);
-                string key = users[id];
+                string key = users.ElementAt(id).UserPrincipalName;
                 userGroupsMapping[key] = userGroups;
             }
 

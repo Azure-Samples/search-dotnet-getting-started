@@ -18,8 +18,6 @@ namespace DotNetHowToSecurityTrimming
     {
         public static string ClientId;
 
-        private static List<string> UsersPrincipalNameGroup;
-
         private static ISearchServiceClient _searchClient;
         private static ISearchIndexClient _indexClient;
 
@@ -34,26 +32,23 @@ namespace DotNetHowToSecurityTrimming
             _microsoftGraphHelper = new MicrosoftGraphHelper(ClientId);
             _microsoftGraphHelper.CreateGraphServiceClient();
             string tenant = ConfigurationManager.AppSettings["Tenant"];
-            UsersPrincipalNameGroup = new List<string>()
-            {
-                String.Format("user1@{0}", tenant),
-                String.Format("user2@{0}", tenant),
-                String.Format("user3@{0}", tenant)
-            };
             
             // Azure Search Initialization
             string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
             string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
             string indexName = "securedfiles";
 
-            Dictionary<Group, List<User>> groups = CreateGroupsWithUsers();
+            Dictionary<Group, List<User>> groups = CreateGroupsWithUsers(tenant);
 
             // Create a group, a user and associate both
             _microsoftGraphHelper.CreateUsersAndGroups(groups).Wait();
 
             // Create a cache that contains the users and the list of groups they are part of
             Console.WriteLine("Refresh cache...\n");
-            RefreshCache();
+
+            var users = groups.SelectMany(u => u.Value);
+
+            RefreshCache(users);
 
             // Create an HTTP reference to the catalog index
             _searchClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
@@ -69,16 +64,16 @@ namespace DotNetHowToSecurityTrimming
             // Index documents with relevant group ids
             IndexDocuments(indexName, groups.Keys.Select(g => g.Id).ToList());
 
-            foreach (var user in UsersPrincipalNameGroup)
+            foreach (var user in users)
             {
                 // Retrieve user's groups so that a search filter could be built using the groups list
-                Console.WriteLine("Get groups for user {0}...\n", user);
-                RefreshCacheIfRequired(user);
-                SearchQueryWithFilter(user);
+                Console.WriteLine("Get groups for user {0}...\n", user.UserPrincipalName);
+                RefreshCacheIfRequired(user.UserPrincipalName);
+                SearchQueryWithFilter(user.UserPrincipalName);
             }
         }
 
-        private static Dictionary<Group, List<User>> CreateGroupsWithUsers()
+        private static Dictionary<Group, List<User>> CreateGroupsWithUsers(string tenant)
         {
             Group group = new Group()
             {
@@ -94,7 +89,7 @@ namespace DotNetHowToSecurityTrimming
                 Surname = "User1",
                 MailNickname = "User1",
                 DisplayName = "First User",
-                UserPrincipalName = UsersPrincipalNameGroup[0],
+                UserPrincipalName = String.Format("user1@{0}", tenant),
                 PasswordProfile = new PasswordProfile() { Password = "********" },
                 AccountEnabled = true
             };
@@ -104,7 +99,7 @@ namespace DotNetHowToSecurityTrimming
                 Surname = "User2",
                 MailNickname = "User2",
                 DisplayName = "Second User",
-                UserPrincipalName = UsersPrincipalNameGroup[1],
+                UserPrincipalName = String.Format("user2@{0}", tenant),
                 PasswordProfile = new PasswordProfile() { Password = "********" },
                 AccountEnabled = true
             };
@@ -126,7 +121,7 @@ namespace DotNetHowToSecurityTrimming
                 Surname = "User3",
                 MailNickname = "User3",
                 DisplayName = "Third User",
-                UserPrincipalName = UsersPrincipalNameGroup[2],
+                UserPrincipalName = String.Format("user3@{0}", tenant),
                 PasswordProfile = new PasswordProfile() { Password = "********" },
                 AccountEnabled = true
             };
@@ -145,10 +140,10 @@ namespace DotNetHowToSecurityTrimming
             }
         }
         
-        private static async void RefreshCache()
+        private static async void RefreshCache(IEnumerable<User> users)
         {
             HttpClient client = new HttpClient();
-            var userGroups = await _microsoftGraphHelper.GetGroupsForUsers(client, UsersPrincipalNameGroup);
+            var userGroups = await _microsoftGraphHelper.GetGroupsForUsers(client, users);
             _groupsCache = new ConcurrentDictionary<string, List<string>>(userGroups);
         }
 
