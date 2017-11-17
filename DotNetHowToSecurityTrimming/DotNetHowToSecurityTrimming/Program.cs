@@ -24,6 +24,7 @@ namespace DotNetHowToSecurityTrimming
         private static ConcurrentDictionary<string, List<string>> _groupsCache = new ConcurrentDictionary<string, List<string>>();
         private static MicrosoftGraphHelper _microsoftGraphHelper;
 
+        // This sample shows how to use Azure Active Directory (AAD) together with Azure Search to restrict document access based on user group membership through Azure Search filters.
         static void Main(string[] args)
         {
             // Application Id as obtained by creating an application from https://apps.dev.microsoft.com
@@ -45,9 +46,7 @@ namespace DotNetHowToSecurityTrimming
 
             // Create a cache that contains the users and the list of groups they are part of
             Console.WriteLine("Refresh cache...\n");
-
             var users = groups.SelectMany(u => u.Value);
-
             RefreshCache(users);
 
             // Create an HTTP reference to the catalog index
@@ -149,7 +148,7 @@ namespace DotNetHowToSecurityTrimming
 
         private static void SearchQueryWithFilter(string user)
         {
-            // Using the filter below, the search result will contain all documents, that their GroupIds field contain any one of the 
+            // Using the filter below, the search result will contain all documents that their GroupIds field contain any one of the 
             // Ids in the groups list
             string filter = String.Format("groupIds/any(p:search.in(p, '{0}'))", string.Join(",", String.Join(",", _groupsCache[user])));
             SearchParameters parameters =
