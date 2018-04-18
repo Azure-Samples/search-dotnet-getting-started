@@ -6,25 +6,31 @@ author: brjohnst
 
 # Getting Started with Azure Search using .NET
 
-This sample includes three projects that are meant to help when getting started with Azure Search and .NET.  It leverages the [Azure Search .NET SDK](https://aka.ms/search-sdk) as well as many best practices. The first sample DotNetHowTo is a simple .NET Core console application that shows how to:
+This sample includes several projects that are meant to help when getting started with Azure Search and .NET. It leverages the [Azure Search .NET SDK](https://aka.ms/search-sdk) as well as many best practices.
+
+The DotNetHowTo sample is a simple .NET Core console application that shows how to:
 
 * Create and Delete an Azure Search index
 * Upload Documents to an Azure Search index
 * Search & Filter documents within an index
 
-The second sample DotNetHowToIndexers is a simple .NET Core console application that shows how to:
+The DotNetETagsExplainer sample shows how to use ETags to update Azure Search resources safely in the presence of concurrency.
+
+The DotNetHowToIndexers sample is a simple .NET Core console application that shows how to:
 
 * Create and Delete an Azure Search index
 * Create an Azure Search indexer for Azure SQL
 
-The third sample DotNetHowToSynonyms demonstrates how to incorporate the Synonyms feature in your application step by step:
+The DotNetHowToSynonyms sample demonstrates how to incorporate the Synonyms feature in your application step by step:
 
 * Create an Azure Search index
 * Search documents using terms that do not appear in the indexed documents
 * Define and upload synonym rules
 * Repeat the search
 
-Lastly, the sample AzureSearchDotNetSample is a more detailed example that demonstrates:
+The DotNetHowToSecurityTrimming sample demonstrates how to implement document-level security in Azure Search using filters.
+
+The DotNetSample project is a more detailed example that demonstrates:
 
 * How to use the Azure Search Indexer to ingest data from common stores (such as Azure SQL) to populate an Azure Search index
 * A simple ASP.net MVC application that allow you to search and view results from an Azure Search index
@@ -32,6 +38,12 @@ Lastly, the sample AzureSearchDotNetSample is a more detailed example that demon
 ## Running the DotNetHowTo sample
 
 * Open the DotNetHowTo.sln project in Visual Studio
+* Update the appsettings.json with the service and api details of your Azure Search service
+* Compile and Run the project
+
+## Running the DotNetETagsExplainer sample
+
+* Open the DotNetETagsExplainer.sln project in Visual Studio
 * Update the appsettings.json with the service and api details of your Azure Search service
 * Compile and Run the project
 
@@ -50,7 +62,11 @@ Lastly, the sample AzureSearchDotNetSample is a more detailed example that demon
 * Update the App.config with the service and api details of your Azure Search service
 * Compile and Run the project
 
-## Running the AzureSearchDotNetSample sample
+## Running the DotNetHowToSecurityTrimming sample
+
+See [Security filters for trimming Azure Search results using Active Directory identities](https://docs.microsoft.com/azure/search/search-security-trimming-for-azure-search-with-aad)
+
+## Running the DotNetSample sample
 
 * Open the AzureSearchDotNetSample.sln project in Visual Studio
 * Update the Web.config in the SimpleSearchMVCApp project with the service and api details of your Azure Search service
