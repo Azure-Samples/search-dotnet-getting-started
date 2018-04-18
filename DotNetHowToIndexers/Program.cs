@@ -1,16 +1,19 @@
 ﻿using System;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Rest.Azure;
 
 namespace AzureSearch.SDKHowTo
 {
     /// <summary>
     /// Demo of Azure Search indexer for Azure SQL
     /// </summary>
-    sealed class Program
+    public sealed class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
             IConfigurationRoot configuration = builder.Build();
@@ -44,12 +47,13 @@ namespace AzureSearch.SDKHowTo
             // If we have run the sample before, this index will be populated
             // We can clear the index by deleting it if it exists and creating
             // it again
-            bool exists = searchService.Indexes.ExistsAsync(index.Name).GetAwaiter().GetResult();
+            bool exists = await searchService.Indexes.ExistsAsync(index.Name);
             if (exists)
             {
-                searchService.Indexes.DeleteAsync(index.Name).Wait();
+                await searchService.Indexes.DeleteAsync(index.Name);
             }
-            searchService.Indexes.CreateAsync(index).Wait();
+
+            await searchService.Indexes.CreateAsync(index);
 
             Console.WriteLine("Creating data source...");
 
@@ -74,7 +78,7 @@ namespace AzureSearch.SDKHowTo
             dataSource.DataChangeDetectionPolicy = new SqlIntegratedChangeTrackingPolicy();
             // The data source does not need to be deleted if it was already created,
             // but the connection string may need to be updated if it was changed
-            searchService.DataSources.CreateOrUpdateAsync(dataSource).Wait();
+            await searchService.DataSources.CreateOrUpdateAsync(dataSource);
 
             Console.WriteLine("Creating Azure SQL indexer...");
             Indexer indexer = new Indexer(
@@ -86,17 +90,26 @@ namespace AzureSearch.SDKHowTo
             // If we already ran the sample, the indexer will remember that it already
             // indexed the sample data and not run again
             // To avoid this, reset the indexer if it exists
-            exists = searchService.Indexers.ExistsAsync(indexer.Name).GetAwaiter().GetResult();
+            exists = await searchService.Indexers.ExistsAsync(indexer.Name);
             if (exists)
             {
-                searchService.Indexers.ResetAsync(indexer.Name).Wait();
+                await searchService.Indexers.ResetAsync(indexer.Name);
             }
-            searchService.Indexers.CreateOrUpdateAsync(indexer).Wait();
+
+            await searchService.Indexers.CreateOrUpdateAsync(indexer);
 
             // We created the indexer with a schedule, but we also
             // want to run it immediately
             Console.WriteLine("Running Azure SQL indexer...");
-            searchService.Indexers.RunAsync(indexer.Name).Wait();
+
+            try
+            {
+                await searchService.Indexers.RunAsync(indexer.Name);
+            }
+            catch (CloudException e) when (e.Response.StatusCode == (HttpStatusCode)429)
+            {
+                Console.WriteLine("Failed to run indexer: {0}", e.Response.Content);
+            }
 
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
