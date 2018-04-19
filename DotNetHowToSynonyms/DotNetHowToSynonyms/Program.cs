@@ -1,6 +1,4 @@
-﻿#define HowToExample
-
-using System;
+﻿using System;
 using System.Configuration;
 using System.Linq;
 using System.Threading;
