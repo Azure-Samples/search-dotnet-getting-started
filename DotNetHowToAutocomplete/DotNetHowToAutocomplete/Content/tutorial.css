@@ -1,0 +1,101 @@
+﻿.tutorialBody {
+    font: 18px/normal 'Segoe UI',Arial,Helvetica,Sans-Serif;
+    color: #292f33;
+    max-width: 750px;
+    margin: 0 auto;
+}
+
+.example {
+    padding: 30px 0;
+    text-align: center;
+}
+
+.exampleTitle {
+    font: 32px/normal 'Segoe UI Light',Arial,Helvetica,Sans-Serif;
+    margin: 20px 0;
+    font-size: 32px;
+    text-align: center;
+}
+
+.exampleText {
+    text-align: left;
+}
+
+.searchBoxForm {
+    width: 648px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 2px 4px 0 rgba(0,0,0,.16);
+    background-color: #fff;
+    display: inline-block;
+    border-collapse: collapse;
+    border-spacing: 0;
+    list-style: none;
+    color: #666;
+}
+
+.searchBox {
+    width: 568px;
+    font-size: 16px;
+    margin: 5px 0 1px 20px;
+    padding: 0 10px 0 0;
+    border: 0;
+    max-height: 30px;
+    outline: none;
+    box-sizing: content-box;
+    height: 35px;
+    vertical-align: top;
+}
+
+.searchBoxSubmit {
+    background-color: #fff;
+    border-color: #fff;
+    background-image: url(/images/search.png);
+    background-repeat: no-repeat;
+    height: 20px;
+    width: 20px;
+    text-indent: -99em;
+    border-width: 0;
+    border-style: solid;
+    margin: 10px;
+    outline: 0;
+}
+
+.ui-menu {
+    font: 18px/normal 'Segoe UI',Arial,Helvetica,Sans-Serif;
+    position: relative;
+    width: 648px;
+}
+
+.ui-autocomplete-category {
+    font: 24px/normal 'Segoe UI Light',Arial,Helvetica,Sans-Serif;
+}
+
+/* for autocompleteInline plugin */
+.hide-autocomplete-dropdown .xdsoft_autocomplete_dropdown {
+    display: none !important;
+}
+
+.xdsoft_autocomplete_dropdown {
+    margin-left: -18px !important;
+    margin-top: 5px !important;
+    width: 648px !important;
+}
+
+.xdsoft_autocomplete_dropdown > div {
+    padding-left: 5px !important;
+}
+
+.xdsoft_autocomplete input {
+    margin: 3px 5px !important;
+}
+
+.xdsoft_autocomplete .xdsoft_autocomplete_hint {
+    position: absolute;
+    z-index: 1;
+    color: #ccc !important;
+    -webkit-text-fill-color: #ccc !important;
+    text-fill-color: #ccc !important;
+    overflow: hidden !important;
+    white-space: pre !important;
+    width: 500px !important;
+}
+
