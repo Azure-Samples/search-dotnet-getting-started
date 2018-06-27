@@ -2,15 +2,18 @@
 
     <div class="example">
         <h2 class="exampleTitle">ASP.NET MVC using the .Net SDK</h2>
+        <div class="exampleText">
+            This tutorial uses the index created by the data loader in the <a href="https://github.com/Azure-Samples/search-dotnet-asp-net-mvc-jobs">NYCJobs</a> sample application.
+        </div>
     </div>
 
     <!-- Suggestions -->
     <div class="example">
         <h2 class="exampleTitle">Suggestions</h2>
         <div class="exampleText">
-            Suggestions provide recommendations of actual results based on what the user has typed so far.  Typically, these are shown in a list below the search box and selecting an option navigates the user directly to what they are looking for instead of having to first go to a search results page and navigate from there.
-            You can use the <a href="https://docs.microsoft.com/en-us/rest/api/searchservice/suggestions">SUGGEST</a> method on the Azure Search REST API to retrieve suggestions for a search term.<br /><br />
-            Example: The suggestions provided in this tutorial are jobs from the NYCJobs sample. Give "exec" a try in the box below to see what the SUGGEST API returns.
+            Suggestions provide recommendations of actual results based on what the user has typed so far.  Typically, these are shown in a dropdown below the search box and selecting an option navigates the user directly to what they are looking for instead of having to first go to a search results page and navigate from there.
+            This example uses the Suggest method in the Azure Search .Net SDK to retrieve suggestions for a search term.<br /><br />
+            Example: Give "exec" a try in the box below to see what the SUGGEST API returns.
         </div>
         <br />
         <div class="searchBoxForm">
@@ -75,9 +78,8 @@
     <div class="example">
         <h2 class="exampleTitle">Autocomplete</h2>
         <div class="exampleText">
-            Autocomplete provides terms that are in the index and help the user complete what they are currently typing.  This helps to user write their search terms as they get recommendation for words and phrases that appear in the index.  This can also be used to provide recommendations for search terms that have been previously been used by other users.
-            You can use the <a href="TBD">AUTOCOMPLETE</a> method on the Azure Search REST API to retrieve words that complete a given search term.<br /><br />
-            Example: Give "business a" a try in the box below to see what the AUTOCOMPLETE API returns.
+            Autocomplete provides terms from the index to complete what the user is currently typing.  Selecting one of the options in the dropdown typically executes the search and takes the user to the results page.  This example uses the Suggest method in the Azure Search .Net SDK to retrieve words that complete the given search term.<br /><br />
+            Example: Give "business a" a try in the box below to see what the autocomplete API returns.
         </div>
         <br />
         <div class="searchBoxForm">
@@ -126,8 +128,8 @@
     <div class="example">
         <h2 class="exampleTitle">Both Suggestions and Autocomplete</h2>
         <div class="exampleText">
-            Autocomplete provides terms that are in the index and help the user complete what they are currently typing.  This helps to user write their search terms as they get recommendation for words and phrases that appear in the index.  This can also be used to provide recommendations for search terms that have been previously been used by other users.
-            You can use the <a href="TBD">AUTOCOMPLETE</a> method on the Azure Search REST API to retrieve words that complete a given search term.<br /><br />
+            Autocomplete and suggestions can work together to enhance the user's search experience.  The search box completes the word current typed using the first autocomplete recommendation returned and suggestions appear in a dropdown below the search box.
+            This example uses both the Suggest and Autocomplete method in the Azure Search .Net SDK.<br /><br />
             Example: Give "const" a try in the box below to see what the AUTOCOMPLETE API returns.
         </div>
         <br />
@@ -187,7 +189,7 @@
     <div class="example">
         <h2 class="exampleTitle">Facets</h2>
         <div class="exampleText">
-            Both suggestions and autocomplete require a roundtrips to the Azure Search index to retrieve recommendations.  This can introduce a delay depending on the network speed of the user.  Another technique to consider is using a facet to retrieve all unique values for a field and cache them on the client when the application page loads.  This is helpful in situations where you are building a search box targeting values in a single field.
+            Both suggestions and autocomplete APIs require roundtrip to the Azure Search index to retrieve recommendations.  This can introduce a delay depending on the network speed of the user.  Another technique to consider is using facets to retrieve all unique values for a field and caching them on the client when the application page loads.  This is helpful in situations where you are building a search experience targeting values in a small number of fields.
             <br /><br />
             Example: Give "dept" a try in the box below to see what the AUTOCOMPLETE API returns.
         </div>
