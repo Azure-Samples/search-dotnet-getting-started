@@ -43,7 +43,7 @@ namespace AutocompleteTutorial.Controllers
             InitSearch();
 
             // Call suggest API and return results
-            SuggestParameters ap = new SuggestParameters()
+            SuggestParameters sp = new SuggestParameters()
             {
                 UseFuzzyMatching = fuzzy,
                 Top = 5
@@ -51,11 +51,11 @@ namespace AutocompleteTutorial.Controllers
 
             if (highlights)
             {
-                ap.HighlightPreTag = "<b>";
-                ap.HighlightPostTag = "</b>";
+                sp.HighlightPreTag = "<b>";
+                sp.HighlightPostTag = "</b>";
             }
 
-            DocumentSuggestResult suggestResult = _indexClient.Documents.Suggest(term, "sg", ap);
+            DocumentSuggestResult suggestResult = _indexClient.Documents.Suggest(term, "sg",sp);
 
             // Convert the suggest query results to a list that can be displayed in the client.
             List<string> suggestions = suggestResult.Results.Select(x => x.Text).ToList();

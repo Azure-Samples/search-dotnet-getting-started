@@ -13,7 +13,7 @@
         <div class="exampleText">
             Suggestions provide recommendations of actual results based on what the user has typed so far.  Typically, these are shown in a dropdown below the search box and selecting an option navigates the user directly to what they are looking for instead of having to first go to a search results page and navigate from there.
             This example uses the Suggest method in the Azure Search .Net SDK to retrieve suggestions for a search term.<br /><br />
-            Example: Give "exec" a try in the box below to see what the SUGGEST API returns.
+            Example: Give "exec" a try in the box below to see what the Suggest API returns.
         </div>
         <br />
         <div class="searchBoxForm">
@@ -78,8 +78,8 @@
     <div class="example">
         <h2 class="exampleTitle">Autocomplete</h2>
         <div class="exampleText">
-            Autocomplete provides terms from the index to complete what the user is currently typing.  Selecting one of the options in the dropdown typically executes the search and takes the user to the results page.  This example uses the Suggest method in the Azure Search .Net SDK to retrieve words that complete the given search term.<br /><br />
-            Example: Give "business a" a try in the box below to see what the autocomplete API returns.
+            Autocomplete provides terms from the index to complete what the user is currently typing.  Selecting one of the options in the dropdown typically executes the search and takes the user to the results page.  This example uses the Autocomplete method in the Azure Search .Net SDK to retrieve words that complete the given search term.<br /><br />
+            Example: Give "business a" a try in the box below to see what the Autocomplete API returns.
         </div>
         <br />
         <div class="searchBoxForm">
@@ -128,9 +128,9 @@
     <div class="example">
         <h2 class="exampleTitle">Both Suggestions and Autocomplete</h2>
         <div class="exampleText">
-            Autocomplete and suggestions can work together to enhance the user's search experience.  The search box completes the word current typed using the first autocomplete recommendation returned and suggestions appear in a dropdown below the search box.
+            Autocomplete and suggestions can work together to enhance the user's search experience.  The search box completes the word currently typed using the first autocomplete recommendation returned and suggestions appear in a dropdown below the search box.
             This example uses both the Suggest and Autocomplete method in the Azure Search .Net SDK.<br /><br />
-            Example: Give "const" a try in the box below to see what the AUTOCOMPLETE API returns.
+            Example: Give "const" a try in the box below to see what the Suggest and Autocomplete APIs return.
         </div>
         <br />
         <div class="searchBoxForm hide-autocomplete-dropdown">
@@ -189,9 +189,9 @@
     <div class="example">
         <h2 class="exampleTitle">Facets</h2>
         <div class="exampleText">
-            Both suggestions and autocomplete APIs require roundtrip to the Azure Search index to retrieve recommendations.  This can introduce a delay depending on the network speed of the user.  Another technique to consider is using facets to retrieve all unique values for a field and caching them on the client when the application page loads.  This is helpful in situations where you are building a search experience targeting values in a small number of fields.
+            Both suggestions and autocomplete APIs require a roundtrip to the Azure Search index to retrieve recommendations.  This can introduce a delay depending on the network speed of the user.  Another technique to consider is using facets to retrieve all unique values for a field and caching them on the client when the application page loads.  This is helpful in situations where you are building a search experience targeting values in a small number of fields.
             <br /><br />
-            Example: Give "dept" a try in the box below to see what the AUTOCOMPLETE API returns.
+            Example: Give "dept" a try in the box below to see what Facets were returned.
         </div>
         <br />
         <div class="searchBoxForm">
