@@ -1,0 +1,347 @@
+﻿@using System.Configuration;
+
+<script>
+    var searchServiceName = "@ConfigurationManager.AppSettings["SearchServiceName"]";
+    var searchServiceApiKey = "@ConfigurationManager.AppSettings["SearchServiceApiKey"]";
+    var indexName = "nycjobs";
+    var apiVersion = "2017-11-11-Preview";
+
+    var suggestUri = "https://" + searchServiceName + ".search.windows.net/indexes/" + indexName + "/docs/suggest?api-version=" + apiVersion;
+    var autocompleteUri = "https://" + searchServiceName + ".search.windows.net/indexes/" + indexName + "/docs/autocomplete?api-version=" + apiVersion;
+    var searchUri = "https://" + searchServiceName + ".search.windows.net/indexes/" + indexName + "/docs/search?api-version=" + apiVersion;
+</script>
+
+<div class="tutorialBody">
+
+    <div class="example">
+        <h2 class="exampleTitle">JavaScript using the REST API</h2>
+        <div class="exampleText">
+            This tutorial uses the index created by the data loader in the <a href="https://github.com/Azure-Samples/search-dotnet-asp-net-mvc-jobs">NYCJobs</a> sample application.
+        </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="example">
+        <h2 class="exampleTitle">Suggestions</h2>
+        <div class="exampleText">
+            Suggestions provide recommendations of actual results based on what the user has typed so far.  Typically, these are shown in a dropdown below the search box and selecting an option navigates the user directly to what they are looking for instead of having to first go to a search results page and navigate from there.
+            This example uses the <a href="https://docs.microsoft.com/rest/api/searchservice/suggestions">Suggest</a> API to retrieve suggestions for a search term.<br /><br />
+            Example: Give "exec" a try in the box below to see what the Suggest API returns.
+        </div>
+        <br />
+        <div class="searchBoxForm">
+            <input class="searchBox" type="text" id="example1a" placeholder="search">
+            <input type="submit" class="searchBoxSubmit">
+        </div>
+    </div>
+    <br />
+
+    <script>
+        $(function () {
+            $("#example1a").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: suggestUri,
+                        dataType: "json",
+                        headers: {
+                            "api-key": searchServiceApiKey,
+                            "Content-Type": "application/json"
+                        },
+                        data: JSON.stringify({
+                            top: 5,
+                            fuzzy: false,
+                            suggesterName: "sg",
+                            search: request.term
+                        }),
+                        success: function (data) {
+                            if (data.value && data.value.length > 0) {
+                                response(data.value.map(x => x["@@search.text"]));
+                            }
+                        }
+                    });
+                },
+                minLength: 3,
+                position: {
+                    my: "left top",
+                    at: "left-23 bottom+10"
+                }
+            });
+        });
+    </script>
+
+    <!-- Suggestions with Hit Highlighting -->
+    <div class="example">
+        <h2 class="exampleTitle">Suggestions with Hit Highlighting</h2>
+        <br />
+        <div class="searchBoxForm">
+            <input class="searchBox" type="text" id="example1b" placeholder="search">
+            <input type="submit" class="searchBoxSubmit">
+        </div>
+    </div>
+    <br />
+
+    <script>
+        $(function () {
+            var updateTextbox = function (event, ui) {
+                var result = ui.item.value.replace(/<\/?[^>]+(>|$)/g, "");
+                $("#example1b").val(result);
+                return false;
+            };
+
+            $("#example1b").autocomplete({
+                html: true,
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: suggestUri,
+                        dataType: "json",
+                        headers: {
+                            "api-key": searchServiceApiKey,
+                            "Content-Type": "application/json"
+                        },
+                        data: JSON.stringify({
+                            top: 5,
+                            fuzzy: false,
+                            suggesterName: "sg",
+                            search: request.term,
+                            highlightPreTag: "<b>",
+                            highlightPostTag: "</b>"
+                        }),
+                        success: function (data) {
+                            if (data.value && data.value.length > 0) {
+                                response(data.value.map(x => x["@@search.text"]));
+                            }
+                        }
+                    });
+                },
+                minLength: 3,
+                position: {
+                    my: "left top",
+                    at: "left-23 bottom+10"
+                },
+                select: updateTextbox,
+                focus: updateTextbox
+            }).data("ui-autocomplete")._renderItem = function (ul, item) {
+                return $("<li></li>")
+                    .data("item.autocomplete", item)
+                    .append("<a>" + item.label + "</a>")
+                    .appendTo(ul);
+            };
+        });
+    </script>
+
+    <!-- Autocomplete -->
+    <div class="example">
+        <h2 class="exampleTitle">Autocomplete</h2>
+        <div class="exampleText">
+            Autocomplete provides terms from the index to complete what the user is currently typing.  Selecting one of the options in the dropdown typically executes the search and takes the user to the results page.  This example uses the <a href="http://aka.ms/AutocompleteAPIReference">Autocomplete</a> API to retrieve words that complete the given search term.<br /><br />
+            Example: Give "business a" a try in the box below to see what the Autocomplete API returns.
+        </div>
+        <br />
+        <div class="searchBoxForm">
+            <input class="searchBox" type="text" id="example2" placeholder="search">
+            <input type="submit" class="searchBoxSubmit">
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            // using modified jQuery Autocomplete plugin v1.2.6 http://xdsoft.net/jqplugins/autocomplete/
+            // $.autocomplete -> $.autocompleteInline
+            $("#example2").autocompleteInline({
+                appendMethod: "replace",
+                source: [
+                    function (text, add) {
+                        if (!text) {
+                            return;
+                        }
+
+                        $.ajax({
+                            type: "POST",
+                            url: autocompleteUri,
+                            dataType: "json",
+                            headers: {
+                                "api-key": searchServiceApiKey,
+                                "Content-Type": "application/json"
+                            },
+                            data: JSON.stringify({
+                                top: 5,
+                                fuzzy: false,
+                                suggesterName: "sg",
+                                search: text,
+                                autocompleteMode: "oneTermWithContext"
+                            }),
+                            success: function (data) {
+                                if (data.value && data.value.length > 0) {
+                                    var suggestions = data.value.map(x => x.text);
+                                    currentSuggestion2 = suggestions[0];
+                                    add(suggestions);
+                                }
+                            }
+                        });
+                    }
+                ]
+            });
+
+            // complete on TAB and clear on ESC
+            $("#example2").keydown(function (evt) {
+                if (evt.keyCode === 9 /* TAB */ && currentSuggestion2) {
+                    $("#example2").val(currentSuggestion2);
+                    return false;
+                } else if (evt.keyCode === 27 /* ESC */) {
+                    currentSuggestion2 = "";
+                    $("#example2").val("");
+                }
+            });
+        });
+    </script>
+    <br />
+
+    <!-- Both Suggestions and Autocomplete -->
+    <div class="example">
+        <h2 class="exampleTitle">Both Suggestions and Autocomplete</h2>
+        <div class="exampleText">
+            Autocomplete and suggestions can work together to enhance the user's search experience.  The search box completes the word current typed using the first autocomplete recommendation returned and suggestions appear in a dropdown below the search box.
+            This example uses both the suggest and autocomplete APIs.<br /><br />
+            Example: Give "const" a try in the box below to see what the Suggest and Autocomplete APIs return.
+        </div>
+        <br />
+        <div class="searchBoxForm hide-autocomplete-dropdown">
+            <input class="searchBox" type="text" id="example3" placeholder="search">
+            <input type="submit" class="searchBoxSubmit">
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            // using modified jQuery Autocomplete plugin v1.2.6 http://xdsoft.net/jqplugins/autocomplete/
+            // $.autocomplete -> $.autocompleteInline
+            $("#example3").autocompleteInline({
+                appendMethod: "replace",
+                source: [
+                    function (text, add) {
+                        if (!text) {
+                            return;
+                        }
+
+                        $.ajax({
+                            type: "POST",
+                            url: autocompleteUri,
+                            dataType: "json",
+                            headers: {
+                                "api-key": searchServiceApiKey,
+                                "Content-Type": "application/json"
+                            },
+                            data: JSON.stringify({
+                                top: 5,
+                                fuzzy: false,
+                                suggesterName: "sg",
+                                search: text,
+                                autocompleteMode: "oneTermWithContext"
+                            }),
+                            success: function (data) {
+                                if (data.value && data.value.length > 0) {
+                                    var suggestions = data.value.map(x => x.text);
+                                    currentSuggestion3 = suggestions[0];
+                                    add(suggestions);
+                                }
+                            }
+                        });
+                    }
+                ]
+            });
+
+            // complete on TAB and clear on ESC
+            $("#example3").keydown(function (evt) {
+                if (evt.keyCode === 9 /* TAB */ && currentSuggestion3) {
+                    $("#example3").val(currentSuggestion3);
+                    return false;
+                } else if (evt.keyCode === 27 /* ESC */) {
+                    currentSuggestion3 = "";
+                    $("#example3").val("");
+                }
+            });
+
+            $("#example3").autocomplete({
+                html: true,
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: suggestUri,
+                        dataType: "json",
+                        headers: {
+                            "api-key": searchServiceApiKey,
+                            "Content-Type": "application/json"
+                        },
+                        data: JSON.stringify({
+                            top: 5,
+                            fuzzy: false,
+                            suggesterName: "sg",
+                            search: request.term
+                        }),
+                        success: function (data) {
+                            if (data.value && data.value.length > 0) {
+                                response(data.value.map(x => x["@@search.text"]));
+                            }
+                        }
+                    });
+                },
+                minLength: 2,
+                position: {
+                    my: "left top",
+                    at: "left-23 bottom+10"
+                }
+            });
+        });
+    </script>
+    <br />
+
+    <!-- Facets -->
+    <div class="example">
+        <h2 class="exampleTitle">Facets</h2>
+        <div class="exampleText">
+            Both suggestions and autocomplete APIs require a roundtrip to the Azure Search index to retrieve recommendations.  This can introduce a delay depending on the network speed of the user.  Another technique to consider is using facets to retrieve all unique values for a field and caching them on the client when the application page loads.  This is helpful in situations where you are building a search experience targeting values in a small number of fields.
+            <br /><br />
+            Example: Give "dept" a try in the box below to see what Facets were returned.
+        </div>
+        <br />
+        <div class="searchBoxForm">
+            <input class="searchBox" type="text" id="example4" placeholder="search">
+            <input type="submit" class="searchBoxSubmit">
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $.ajax({
+                type: "POST",
+                url: searchUri,
+                dataType: "json",
+                headers: {
+                    "api-key": searchServiceApiKey,
+                    "Content-Type": "application/json"
+                },
+                data: JSON.stringify({
+                    top: 10,
+                    facets: ["agency,count:500"],
+                    search: "*"
+                }),
+                success: function (data) {
+                    if (data.value && data.value.length > 0) {
+                        $("#example4").autocomplete({
+                            minLength: 3,
+                            position: {
+                                my: "left top",
+                                at: "left-23 bottom+10"
+                            },
+                            source: data["@@search.facets"].agency.map(x => x.value)
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+    <br /><br /><br /><br /><br /><br /><br /><br />
+    <br /><br /><br /><br /><br /><br /><br /><br />
+</div>

@@ -35,6 +35,13 @@ The DotNetSample project is a more detailed example that demonstrates:
 * How to use the Azure Search Indexer to ingest data from common stores (such as Azure SQL) to populate an Azure Search index
 * A simple ASP.net MVC application that allow you to search and view results from an Azure Search index
 
+The DotNetHowToAutocomplete sample demonstrates several techniques for adding auto-complete and suggestions to your search experience.  It demonstrates the following:
+
+* Implement a search input box
+* Add support for an auto-complete list that pulls from a remote source 
+* Retrieve suggestions and auto-complete using the .Net SDK and REST API
+* Support client-side caching to improve performance 
+
 ## Running the DotNetHowTo sample
 
 * Open the DotNetHowTo.sln project in Visual Studio
@@ -73,6 +80,11 @@ See [Security filters for trimming Azure Search results using Active Directory i
 * Update the App.config in the DataIndexer project with the service and api details of your Azure Search service
 * Compile and Run the DataIndexer project to create an Azure Search and populate it with content from an Azure SQL database
 * Compile and Run the SimpleSearchMVCApp project to search and view the results from this index
+
+## Running the DotNetHowToAutocomplete sample
+
+* Open the DotNetHowToAutocomplete.sln project in Visual Studio
+* Compile and Run the project
 
 ## More information
 
