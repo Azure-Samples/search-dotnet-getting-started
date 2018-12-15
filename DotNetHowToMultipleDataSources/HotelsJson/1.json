@@ -1,0 +1,7 @@
+{
+    "HotelId": "1",
+    "Tags": [ "pool", "view", "wifi", "concierge" ],
+    "LastRenovationDate": "2010-06-27",
+    "ParkingIncluded": false,
+    "Location": { "type": "Point", "coordinates": [ -122.131577, 47.678581 ] }
+}

@@ -21,6 +21,12 @@ The DotNetHowToIndexers sample is a simple .NET Core console application that sh
 * Create and Delete an Azure Search index
 * Create an Azure Search indexer for Azure SQL
 
+The DotNetHowToMultipleDataSources sample demonstrates combining multiple Azure data sources into a single search index using indexers:
+
+* Create and Delete an Azure Search index
+* Create two Azure Search indexers, one for Azure SQL and one for Cosmos DB
+* Target the same Azure Search index using both indexers
+
 The DotNetHowToSynonyms sample demonstrates how to incorporate the Synonyms feature in your application step by step:
 
 * Create an Azure Search index
@@ -62,6 +68,16 @@ The DotNetHowToAutocomplete sample demonstrates several techniques for adding au
 * Compile and Run the project using Visual Studio 2017.
 * Alternatively, download the .NET Core SDK at https://www.microsoft.com/net/core and
   issue a `dotnet run` command from the DotNetHowToIndexers directory.
+
+## Running the DotNetHowToMultipleDataSources sample
+
+* Open the DotNetHowToMultipleDataSources.csproj project in Visual Studio.
+* Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database and Cosmos DB database
+* Run the `data\hotels.sql` script against your Azure SQL database.
+* Upload the json files in `HotelsJson` to a SQL collection called `hotels` in your Cosmos DB database
+* Compile and Run the project using Visual Studio 2017.
+* Alternatively, download the .NET Core SDK at https://www.microsoft.com/net/core and
+  issue a `dotnet run` command from the DotNetHowToMultipleDataSources directory.
 
 ## Running the DotNetHowToSynonyms sample
 
