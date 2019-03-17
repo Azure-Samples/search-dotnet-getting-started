@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
-using Microsoft.Spatial;
 using Newtonsoft.Json;
 
 namespace AzureSearch.SDKHowTo
@@ -10,11 +9,10 @@ namespace AzureSearch.SDKHowTo
     // It ensures that Pascal-case property names in the model class are mapped to camel-case
     // field names in the index.
     [SerializePropertyNamesAsCamelCase]
-    public partial class Hotel
+    public partial class Room
     {
-        [System.ComponentModel.DataAnnotations.Key]
-        [IsFilterable]
-        public string HotelId { get; set; }
+        [IsFilterable, IsSortable, IsFacetable]
+        public string RoomId { get; set; }
 
         [IsSearchable]
         [Analyzer(AnalyzerName.AsString.EnMicrosoft)]
@@ -25,27 +23,25 @@ namespace AzureSearch.SDKHowTo
         [JsonProperty("description_fr")]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable]
-        public string HotelName { get; set; }
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        public string Type { get; set; }
+
+        [IsFilterable, IsSortable, IsFacetable]
+        public double? BaseRate { get; set; }
 
         [IsSearchable, IsFilterable, IsSortable, IsFacetable]
-        public string Category { get; set; }
+        public string BedOptions { get; set; }
+
+        [IsFilterable, IsSortable, IsFacetable]
+        public int SleepsCount { get; set; }
+
+        [IsFilterable, IsFacetable]
+        public bool? SmokingAllowed { get; set; }
+
+        [IsFilterable, IsFacetable]
+        public int RoomsAvailable { get; set; }
 
         [IsSearchable, IsFilterable, IsFacetable]
         public string[] Tags { get; set; }
-
-        [IsFilterable, IsFacetable]
-        public bool? ParkingIncluded { get; set; }
-
-        [IsFilterable, IsSortable, IsFacetable]
-        public DateTimeOffset? LastRenovationDate { get; set; }
-
-        [IsFilterable, IsSortable, IsFacetable]
-        public int? Rating { get; set; }
-
-        [IsFilterable, IsSortable]
-        public GeographyPoint Location { get; set; }
-
-        public Room[] Rooms { get; set; }
     }
 }
