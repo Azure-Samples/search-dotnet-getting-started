@@ -1,0 +1,7 @@
+{
+    "HotelId": "2",
+    "Tags": [ "motel", "budget" ],
+    "LastRenovationDate": "1982-04-28",
+    "ParkingIncluded": true,
+    "Location": { "type": "Point", "coordinates": [ -122.131577, 49.678581 ] }
+}
