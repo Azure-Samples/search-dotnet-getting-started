@@ -1,11 +1,11 @@
-﻿using System;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
-using Microsoft.Spatial;
-using Newtonsoft.Json;
-
-namespace AzureSearch.SDKHowTo
+﻿namespace AzureSearch.SDKHowTo
 {
+    using System;
+    using Microsoft.Azure.Search;
+    using Microsoft.Azure.Search.Models;
+    using Microsoft.Spatial;
+    using Newtonsoft.Json;
+
     // The SerializePropertyNamesAsCamelCase attribute is defined in the Azure Search .NET SDK.
     // It ensures that Pascal-case property names in the model class are mapped to camel-case
     // field names in the index.
@@ -17,16 +17,16 @@ namespace AzureSearch.SDKHowTo
         public string HotelId { get; set; }
 
         [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.EnMicrosoft)]
+        public string HotelName { get; set; }
+
+        [IsSearchable]
+        [Analyzer(AnalyzerName.AsString.EnLucene)]
         public string Description { get; set; }
 
         [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.FrMicrosoft)]
-        [JsonProperty("description_fr")]
+        [Analyzer(AnalyzerName.AsString.FrLucene)]
+        [JsonProperty("Description_fr")]
         public string DescriptionFr { get; set; }
-
-        [IsSearchable, IsFilterable, IsSortable]
-        public string HotelName { get; set; }
 
         [IsSearchable, IsFilterable, IsSortable, IsFacetable]
         public string Category { get; set; }
@@ -37,11 +37,16 @@ namespace AzureSearch.SDKHowTo
         [IsFilterable, IsFacetable]
         public bool? ParkingIncluded { get; set; }
 
+        [IsFilterable, IsFacetable]
+        public bool? SmokingAllowed { get; set; }
+
         [IsFilterable, IsSortable, IsFacetable]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
         [IsFilterable, IsSortable, IsFacetable]
-        public int? Rating { get; set; }
+        public double? Rating { get; set; }
+
+        public Address Address { get; set; }
 
         [IsFilterable, IsSortable]
         public GeographyPoint Location { get; set; }

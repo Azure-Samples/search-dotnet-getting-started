@@ -91,48 +91,10 @@ namespace AzureSearch.SDKHowTo
                     Category = "Luxury", 
                     Tags = new[] { "pool", "view", "wifi", "concierge" },
                     ParkingIncluded = false, 
+                    SmokingAllowed = false,
                     LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
                     Rating = 5, 
-                    Location = GeographyPoint.Create(47.678581, -122.131577),
-                    Rooms = new Room[]
-                    {
-                        new Room()
-                        {
-                            RoomId = "1",
-                            Description = "Deluxe Room, 2 Double Beds (Cityside)",
-                            DescriptionFr = "Chambre Deluxe, 2 lits doubles (Côté ville)",
-                            Type = "Deluxe",
-                            BaseRate = 199.00,
-                            BedOptions = "2 Double Beds",
-                            SleepsCount = 4,
-                            SmokingAllowed = false,
-                            Tags = new[] { "city", "view" }
-                        },
-                        new Room()
-                        {
-                            RoomId = "2",
-                            Description = "Deluxe Room, 1 King Bed (Waterfront)",
-                            DescriptionFr = "Chambre Deluxe, 1 lit King-Size (Face à l'eau)",
-                            Type = "Deluxe",
-                            BaseRate = 249.00,
-                            BedOptions = "1 King Bed",
-                            SleepsCount = 3,
-                            SmokingAllowed = false,
-                            Tags = new[] { "water", "view" }
-                        },
-                        new Room()
-                        {
-                            RoomId = "3",
-                            Description = "Deluxe Room, 2 Double Beds (Waterfront)",
-                            DescriptionFr = "Chambre Deluxe, 1 lit King-Size (Face à l'eau)",
-                            Type = "Deluxe",
-                            BaseRate = 199.00,
-                            BedOptions = "2 Double Beds",
-                            SleepsCount = 4,
-                            SmokingAllowed = false,
-                            Tags = new[] { "water", "view" }
-                        }
-                    }
+                    Location = GeographyPoint.Create(47.678581, -122.131577)
                 },
                 new Hotel()
                 { 
@@ -143,53 +105,15 @@ namespace AzureSearch.SDKHowTo
                     Category = "Budget",
                     Tags = new[] { "motel", "budget" },
                     ParkingIncluded = true,
+                    SmokingAllowed = true,
                     LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
                     Rating = 1,
-                    Location = GeographyPoint.Create(49.678581, -122.131577),
-                    Rooms = new Room[]
-                    {
-                        new Room()
-                        {
-                            RoomId = "1",
-                            Description = "Standard Room, 1 Queen Bed",
-                            DescriptionFr = "Chambre standard, 1 lit Queen-Size",
-                            Type = "Standard",
-                            BaseRate = 79.00,
-                            BedOptions = "1 Queen Beds",
-                            SleepsCount = 3,
-                            SmokingAllowed = false
-                        },
-                        new Room()
-                        {
-                            RoomId = "2",
-                            Description = "Standard Room, 2 Queen Beds",
-                            DescriptionFr = "Chambre standard, 2 lit Queen-Size",
-                            Type = "Deluxe",
-                            BaseRate = 87.00,
-                            BedOptions = "2 Queen Bed",
-                            SleepsCount = 5,
-                            SmokingAllowed = false
-                        }
-                    }
+                    Location = GeographyPoint.Create(49.678581, -122.131577)
                 },
                 new Hotel() 
                 { 
                     HotelId = "3", 
-                    Description = "Close to town hall and the river",
-                    Rooms = new Room[]
-                    {
-                        new Room()
-                        {
-                            RoomId = "1",
-                            Description = "Standard Double Room",
-                            DescriptionFr = "Chambre Double Standard",
-                            Type = "Standard",
-                            BaseRate = 129.00,
-                            BedOptions = "2 Double Beds",
-                            SleepsCount = 5,
-                            SmokingAllowed = false
-                        }
-                    }
+                    Description = "Close to town hall and the river"
                 }
             };
 
@@ -224,113 +148,40 @@ namespace AzureSearch.SDKHowTo
                         new Hotel()
                         {
                             HotelId = "1",
+                            BaseRate = 199.0,
                             Description = "Best hotel in town",
                             DescriptionFr = "Meilleur hôtel en ville",
                             HotelName = "Fancy Stay",
                             Category = "Luxury",
                             Tags = new[] { "pool", "view", "wifi", "concierge" },
                             ParkingIncluded = false,
+                            SmokingAllowed = false,
                             LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero),
                             Rating = 5,
-                            Location = GeographyPoint.Create(47.678581, -122.131577),
-                            Rooms = new Room[]
-                            {
-                                new Room()
-                                {
-                                    RoomId = "1",
-                                    Description = "Deluxe Room, 2 Double Beds (Cityside)",
-                                    DescriptionFr = "Chambre Deluxe, 2 lits doubles (Côté ville)",
-                                    Type = "Deluxe",
-                                    BaseRate = 199.00,
-                                    BedOptions = "2 Double Beds",
-                                    SleepsCount = 4,
-                                    SmokingAllowed = false,
-                                    Tags = new[] { "city", "view" }
-                                },
-                                new Room()
-                                {
-                                    RoomId = "2",
-                                    Description = "Deluxe Room, 1 King Bed (Waterfront)",
-                                    DescriptionFr = "Chambre Deluxe, 1 lit King-Size (Face à l'eau)",
-                                    Type = "Deluxe",
-                                    BaseRate = 249.00,
-                                    BedOptions = "1 King Bed",
-                                    SleepsCount = 3,
-                                    SmokingAllowed = false,
-                                    Tags = new[] { "water", "view" }
-                                },
-                                new Room()
-                                {
-                                    RoomId = "3",
-                                    Description = "Deluxe Room, 2 Double Beds (Waterfront)",
-                                    DescriptionFr = "Chambre Deluxe, 1 lit King-Size (Face à l'eau)",
-                                    Type = "Deluxe",
-                                    BaseRate = 199.00,
-                                    BedOptions = "2 Double Beds",
-                                    SleepsCount = 4,
-                                    SmokingAllowed = false,
-                                    Tags = new[] { "water", "view" }
-                                }
-                            }
+                            Location = GeographyPoint.Create(47.678581, -122.131577)
                         }),
                     IndexAction.Upload(
                         new Hotel()
                         {
                             HotelId = "2",
+                            BaseRate = 79.99,
                             Description = "Cheapest hotel in town",
                             DescriptionFr = "Hôtel le moins cher en ville",
                             HotelName = "Roach Motel",
                             Category = "Budget",
                             Tags = new[] { "motel", "budget" },
                             ParkingIncluded = true,
+                            SmokingAllowed = true,
                             LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
                             Rating = 1,
-                            Location = GeographyPoint.Create(49.678581, -122.131577),
-                            Rooms = new Room[]
-                            {
-                                new Room()
-                                {
-                                    RoomId = "1",
-                                    Description = "Standard Room, 1 Queen Bed",
-                                    DescriptionFr = "Chambre standard, 1 lit Queen-Size",
-                                    Type = "Standard",
-                                    BaseRate = 79.00,
-                                    BedOptions = "1 Queen Beds",
-                                    SleepsCount = 3,
-                                    SmokingAllowed = false
-                                },
-                                new Room()
-                                {
-                                    RoomId = "2",
-                                    Description = "Standard Room, 2 Queen Beds",
-                                    DescriptionFr = "Chambre standard, 2 lit Queen-Size",
-                                    Type = "Deluxe",
-                                    BaseRate = 87.00,
-                                    BedOptions = "2 Queen Bed",
-                                    SleepsCount = 5,
-                                    SmokingAllowed = false
-                                }
-                            }
+                            Location = GeographyPoint.Create(49.678581, -122.131577)
                         }),
                     IndexAction.MergeOrUpload(
                         new Hotel()
                         {
                             HotelId = "3",
-                            Description = "Close to town hall and the river",
-                            Rooms = new Room[]
-                            {
-                                new Room()
-                                {
-                                    RoomId = "1",
-                                    Description = "Standard Double Room",
-                                    DescriptionFr = "Chambre Double Standard",
-                                    Type = "Standard",
-                                    BaseRate = 129.00,
-                                    BedOptions = "2 Double Beds",
-                                    SleepsCount = 5,
-                                    SmokingAllowed = false
-                                }
-                            }
+                            BaseRate = 129.99,
+                            Description = "Close to town hall and the river"
                         }),
                     IndexAction.Delete(new Hotel() { HotelId = "6" })
                 };
@@ -379,7 +230,7 @@ namespace AzureSearch.SDKHowTo
             parameters =
                 new SearchParameters()
                 {
-                    Filter = "rooms.baseRate lt 150",
+                    Filter = "baseRate lt 150",
                     Select = new[] { "hotelId", "description" }
                 };
 
