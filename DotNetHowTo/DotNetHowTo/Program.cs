@@ -12,6 +12,8 @@ namespace AzureSearch.SDKHowTo
 
     class Program
     {
+        private string IndexName = "";
+
         // This sample shows how to delete, create, upload documents and query an index
         static void Main(string[] args)
         {
@@ -20,18 +22,20 @@ namespace AzureSearch.SDKHowTo
 
             SearchServiceClient serviceClient = CreateSearchServiceClient(configuration);
 
+            string indexName = configuration["SearchIndexName"];
+
             Console.WriteLine("{0}", "Deleting index...\n");
-            DeleteHotelsIndexIfExists(serviceClient);
+            DeleteIndexIfExists(indexName, serviceClient);
 
             Console.WriteLine("{0}", "Creating index...\n");
-            CreateHotelsIndex(serviceClient);
+            CreateIndex(indexName, serviceClient);
 
-            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(indexName);
 
             Console.WriteLine("{0}", "Uploading documents...\n");
             UploadDocuments(indexClient);
 
-            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient(configuration);
+            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient(indexName, configuration);
 
             RunQueries(indexClientForQueries);
 
@@ -48,28 +52,28 @@ namespace AzureSearch.SDKHowTo
             return serviceClient;
         }
 
-        private static SearchIndexClient CreateSearchIndexClient(IConfigurationRoot configuration)
+        private static SearchIndexClient CreateSearchIndexClient(string indexName, IConfigurationRoot configuration)
         {
             string searchServiceName = configuration["SearchServiceName"];
             string queryApiKey = configuration["SearchServiceQueryApiKey"];
 
-            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(queryApiKey));
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, indexName, new SearchCredentials(queryApiKey));
             return indexClient;
         }
 
-        private static void DeleteHotelsIndexIfExists(SearchServiceClient serviceClient)
+        private static void DeleteIndexIfExists(string indexName, SearchServiceClient serviceClient)
         {
-            if (serviceClient.Indexes.Exists("hotels"))
+            if (serviceClient.Indexes.Exists(indexName))
             {
-                serviceClient.Indexes.Delete("hotels");
+                serviceClient.Indexes.Delete(indexName);
             }
         }
 
-        private static void CreateHotelsIndex(SearchServiceClient serviceClient)
+        private static void CreateIndex(string indexName, SearchServiceClient serviceClient)
         {
             var definition = new Index()
             {
-                Name = "hotels",
+                Name = indexName,
                 Fields = FieldBuilder.BuildForType<Hotel>()
             };
 
@@ -83,36 +87,34 @@ namespace AzureSearch.SDKHowTo
             var hotels = new Hotel[]
             {
                 new Hotel()
-                { 
-                    HotelId = "1", 
+                {
+                    HotelId = "1",
                     Description = "Best hotel in town",
                     DescriptionFr = "Meilleur hôtel en ville",
                     HotelName = "Fancy Stay",
-                    Category = "Luxury", 
+                    Category = "Luxury",
                     Tags = new[] { "pool", "view", "wifi", "concierge" },
-                    ParkingIncluded = false, 
-                    SmokingAllowed = false,
-                    LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
-                    Rating = 5, 
+                    ParkingIncluded = false,
+                    LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero),
+                    Rating = 5,
                     Location = GeographyPoint.Create(47.678581, -122.131577)
                 },
                 new Hotel()
-                { 
-                    HotelId = "2", 
+                {
+                    HotelId = "2",
                     Description = "Cheapest hotel in town",
                     DescriptionFr = "Hôtel le moins cher en ville",
                     HotelName = "Roach Motel",
                     Category = "Budget",
                     Tags = new[] { "motel", "budget" },
                     ParkingIncluded = true,
-                    SmokingAllowed = true,
                     LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
                     Rating = 1,
                     Location = GeographyPoint.Create(49.678581, -122.131577)
                 },
-                new Hotel() 
-                { 
-                    HotelId = "3", 
+                new Hotel()
+                {
+                    HotelId = "3",
                     Description = "Close to town hall and the river"
                 }
             };

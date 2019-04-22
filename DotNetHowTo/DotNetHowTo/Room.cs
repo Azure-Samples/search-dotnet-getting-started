@@ -12,28 +12,31 @@ namespace AzureSearch.SDKHowTo
     public partial class Room
     {
         [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.EnLucene)]
+        [Analyzer(AnalyzerName.AsString.EnMicrosoft)]
         public string Description { get; set; }
 
         [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.FrLucene)]
+        [Analyzer(AnalyzerName.AsString.FrMicrosoft)]
         [JsonProperty("Description_fr")]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFacetable]
+        [IsSearchable]
         public string Type { get; set; }
 
         [IsFilterable, IsFacetable]
         public double? BaseRate { get; set; }
 
-        [IsSearchable]
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
         public string BedOptions { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [IsFilterable, IsSortable, IsFacetable]
         public int SleepsCount { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [IsFilterable, IsSortable, IsFacetable]
         public bool? SmokingAllowed { get; set; }
+
+        [IsFilterable, IsSortable, IsFacetable]
+        public int RoomsAvailable { get; set; }
 
         [IsSearchable, IsFilterable, IsFacetable]
         public string[] Tags { get; set; }

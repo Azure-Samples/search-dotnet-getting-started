@@ -14,13 +14,16 @@ namespace AzureSearch.SDKHowTo
         [IsSearchable]
         public string StreetAddress { get; set; }
 
-        [IsSearchable]
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
         public string City { get; set; }
 
-        [IsSearchable]
-        public string State { get; set; }
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        public string StateProvince { get; set; }
 
-        [IsSearchable]
-        public string ZipCode { get; set; }
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        public string PostalCode { get; set; }
+
+        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        public string Country { get; set; }
     }
 }

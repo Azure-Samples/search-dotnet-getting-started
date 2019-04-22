@@ -62,45 +62,6 @@
                 builder.AppendFormat("Location: Latitude {0}, longitude {1}\t", Location.Latitude, Location.Longitude);
             }
 
-            //List the rooms.
-            foreach (var room in Rooms)
-            {
-                if (!String.IsNullOrEmpty(room.Description))
-                {
-                    builder.AppendFormat("Description: {0}\t", room.Description);
-                }
-
-                if (!String.IsNullOrEmpty(room.DescriptionFr))
-                {
-                    builder.AppendFormat("Description (French): {0}\t", room.DescriptionFr);
-                }
-
-                if (!String.IsNullOrEmpty(room.Type))
-                {
-                    builder.AppendFormat("Room type: {0}\t", room.Type);
-                }
-
-                if (room.BaseRate.HasValue)
-                {
-                    builder.AppendFormat("Base rate: {0}\t", room.BaseRate);
-                }
-
-                if (!String.IsNullOrEmpty(room.BedOptions))
-                {
-                    builder.AppendFormat("Bed options: {0}\t", room.BedOptions);
-                }
-
-                if (room.SleepsCount > 0)
-                {
-                    builder.AppendFormat((room.SleepsCount > 1) ? "Sleeps {0} people\t" : "Sleeps {0} person\t", room.SleepsCount);
-                }
-
-                if (room.SmokingAllowed.HasValue)
-                {
-                    builder.AppendFormat((room.SmokingAllowed.Value) ? "Smoking room\t" : "Non-smoking room\ty");
-                }
-            }
-
             return builder.ToString();
         }
     }

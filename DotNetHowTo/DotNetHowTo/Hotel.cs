@@ -16,7 +16,7 @@
         [IsFilterable]
         public string HotelId { get; set; }
 
-        [IsSearchable]
+        [IsSearchable, IsSortable]
         public string HotelName { get; set; }
 
         [IsSearchable]
@@ -34,11 +34,8 @@
         [IsSearchable, IsFilterable, IsFacetable]
         public string[] Tags { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [IsFilterable, IsSortable, IsFacetable]
         public bool? ParkingIncluded { get; set; }
-
-        [IsFilterable, IsFacetable]
-        public bool? SmokingAllowed { get; set; }
 
         [IsFilterable, IsSortable, IsFacetable]
         public DateTimeOffset? LastRenovationDate { get; set; }
