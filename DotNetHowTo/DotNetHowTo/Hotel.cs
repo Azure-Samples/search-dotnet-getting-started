@@ -9,7 +9,7 @@
     // The SerializePropertyNamesAsCamelCase attribute is defined in the Azure Search .NET SDK.
     // It ensures that Pascal-case property names in the model class are mapped to camel-case
     // field names in the index.
-    [SerializePropertyNamesAsCamelCase]
+    //[SerializePropertyNamesAsCamelCase]
     public partial class Hotel
     {
         [System.ComponentModel.DataAnnotations.Key]
