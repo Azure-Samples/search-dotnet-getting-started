@@ -54,12 +54,29 @@
 
             if (Rating.HasValue)
             {
-                builder.AppendFormat("Rating: {0}/5\n{1}\n{2}, {3} {4}\n{5}\n", Rating, Address.StreetAddress, Address.City, Address.StateProvince, Address.PostalCode, Address.Country);
+                builder.AppendFormat("Rating: {0}\n", Rating);
+            }
+
+            if (Address != null && !Address.IsEmpty)
+            {
+                builder.AppendFormat("Address: \n{0}\n", Address.ToString());
             }
 
             if (Location != null)
             {
                 builder.AppendFormat("Location: Latitude {0}, Longitude {1}\n", Location.Latitude, Location.Longitude);
+            }
+
+            if (Rooms != null)
+            {
+                builder.AppendFormat("\nRooms: \n");
+                foreach (var room in Rooms)
+                {
+                    if (room != null)
+                    {
+                        builder.AppendFormat("{0}\n\n", room.ToString());
+                    }
+                }
             }
 
             return builder.ToString();

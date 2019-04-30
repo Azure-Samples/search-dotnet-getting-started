@@ -457,7 +457,7 @@ namespace AzureSearch.SDKHowTo
                                 SleepsCount = 2,
                                 SmokingAllowed = true,
                                 Tags = new[] { "suite" }
-                                }
+                            }
                         }
                     }
                 ),
@@ -508,7 +508,7 @@ namespace AzureSearch.SDKHowTo
             parameters =
                 new SearchParameters()
                 {
-                    Filter = "Rooms/any(s: s/BaseRate lt 100)",
+                    Filter = "Rooms/any(r: r/BaseRate lt 100)",
                     Select = new[] { "HotelId", "Description" }
                 };
 
