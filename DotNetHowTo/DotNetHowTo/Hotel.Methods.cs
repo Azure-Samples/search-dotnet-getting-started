@@ -14,52 +14,52 @@
 
             if (!String.IsNullOrEmpty(HotelId))
             {
-                builder.AppendFormat("ID: {0}\t", HotelId);
-            }
-
-            if (!String.IsNullOrEmpty(Description))
-            {
-                builder.AppendFormat("Description: {0}\t", Description);
-            }
-
-            if (!String.IsNullOrEmpty(DescriptionFr))
-            {
-                builder.AppendFormat("Description (French): {0}\t", DescriptionFr);
+                builder.AppendFormat("HotelId: {0}\n", HotelId);
             }
 
             if (!String.IsNullOrEmpty(HotelName))
             {
-                builder.AppendFormat("Name: {0}\t", HotelName);
+                builder.AppendFormat("Name: {0}\n", HotelName);
             }
 
+            if (!String.IsNullOrEmpty(Description))
+            {
+                builder.AppendFormat("Description: {0}\n", Description);
+            }
+
+            if (!String.IsNullOrEmpty(DescriptionFr))
+            {
+                builder.AppendFormat("Description (French): {0}\n", DescriptionFr);
+            }
+            
             if (!String.IsNullOrEmpty(Category))
             {
-                builder.AppendFormat("Category: {0}\t", Category);
+                builder.AppendFormat("Category: {0}\n", Category);
             }
 
             if (Tags != null && Tags.Length > 0)
             {
-                builder.AppendFormat("Tags: [{0}]\t", String.Join(", ", Tags));
+                builder.AppendFormat("Tags: [ {0} ]\n", String.Join(", ", Tags));
             }
 
             if (ParkingIncluded.HasValue)
             {
-                builder.AppendFormat("Parking included: {0}\t", ParkingIncluded.Value ? "yes" : "no");
+                builder.AppendFormat("Parking included: {0}\n", ParkingIncluded.Value ? "yes" : "no");
             }
 
             if (LastRenovationDate.HasValue)
             {
-                builder.AppendFormat("Last renovated on: {0}\t", LastRenovationDate);
+                builder.AppendFormat("Last renovated on: {0}\n", LastRenovationDate);
             }
 
             if (Rating.HasValue)
             {
-                builder.AppendFormat("Rating: {0}/5\t", Rating);
+                builder.AppendFormat("Rating: {0}/5\n{1}\n{2}, {3} {4}\n{5}\n", Rating, Address.StreetAddress, Address.City, Address.StateProvince, Address.PostalCode, Address.Country);
             }
 
             if (Location != null)
             {
-                builder.AppendFormat("Location: Latitude {0}, longitude {1}\t", Location.Latitude, Location.Longitude);
+                builder.AppendFormat("Location: Latitude {0}, Longitude {1}\n", Location.Latitude, Location.Longitude);
             }
 
             return builder.ToString();
