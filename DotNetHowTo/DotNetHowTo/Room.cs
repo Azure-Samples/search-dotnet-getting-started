@@ -5,41 +5,31 @@ using Newtonsoft.Json;
 
 namespace AzureSearch.SDKHowTo
 {
-    // The SerializePropertyNamesAsCamelCase attribute is defined in the Azure Search .NET SDK.
-    // It ensures that Pascal-case property names in the model class are mapped to camel-case
-    // field names in the index.
-    [SerializePropertyNamesAsCamelCase]
     public partial class Room
     {
-        [IsFilterable, IsSortable, IsFacetable]
-        public string RoomId { get; set; }
-
         [IsSearchable]
         [Analyzer(AnalyzerName.AsString.EnMicrosoft)]
         public string Description { get; set; }
 
         [IsSearchable]
         [Analyzer(AnalyzerName.AsString.FrMicrosoft)]
-        [JsonProperty("description_fr")]
+        [JsonProperty("Description_fr")]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [IsSearchable, IsFilterable, IsFacetable]
         public string Type { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [IsFilterable, IsFacetable]
         public double? BaseRate { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [IsSearchable, IsFilterable, IsFacetable]
         public string BedOptions { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [IsFilterable, IsFacetable]
         public int SleepsCount { get; set; }
 
         [IsFilterable, IsFacetable]
         public bool? SmokingAllowed { get; set; }
-
-        [IsFilterable, IsFacetable]
-        public int RoomsAvailable { get; set; }
 
         [IsSearchable, IsFilterable, IsFacetable]
         public string[] Tags { get; set; }
