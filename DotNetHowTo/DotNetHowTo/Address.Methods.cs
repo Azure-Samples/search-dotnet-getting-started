@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text;
+    using Newtonsoft.Json;
 
     public partial class Address
     {
@@ -20,14 +21,11 @@
             return builder.ToString();
         }
 
-        public bool IsEmpty {
-            get {
-                return (String.IsNullOrEmpty(StreetAddress) &&
-                        String.IsNullOrEmpty(City) &&
-                        String.IsNullOrEmpty(StateProvince) &&
-                        String.IsNullOrEmpty(PostalCode) &&
-                        String.IsNullOrEmpty(Country));
-            }
-        }
+        [JsonIgnore]
+        public bool IsEmpty => String.IsNullOrEmpty(StreetAddress) &&
+                               String.IsNullOrEmpty(City) &&
+                               String.IsNullOrEmpty(StateProvince) &&
+                               String.IsNullOrEmpty(PostalCode) &&
+                               String.IsNullOrEmpty(Country);
     }
 }

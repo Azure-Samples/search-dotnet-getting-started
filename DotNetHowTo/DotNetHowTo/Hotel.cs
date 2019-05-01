@@ -33,6 +33,12 @@
         [IsFilterable, IsSortable, IsFacetable]
         public bool? ParkingIncluded { get; set; }
 
+        // SmokingAllowed reflects whether any room in the hotel allows smoking.
+        // The JsonIgnore attribute indicates that a field should not be created 
+        // in the index for this property and it will only be used by code in the client.
+        [JsonIgnore]
+        public bool? SmokingAllowed => (Rooms != null) ? Array.Exists(Rooms, element => element.SmokingAllowed == true) : (bool?)null;
+
         [IsFilterable, IsSortable, IsFacetable]
         public DateTimeOffset? LastRenovationDate { get; set; }
 

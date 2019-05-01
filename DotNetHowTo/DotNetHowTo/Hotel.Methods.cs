@@ -47,6 +47,11 @@
                 builder.AppendFormat("Parking included: {0}\n", ParkingIncluded.Value ? "yes" : "no");
             }
 
+            if (SmokingAllowed.HasValue)
+            {
+                builder.AppendFormat("Smoking allowed: {0}\n", SmokingAllowed.Value ? "yes" : "no");
+            }
+
             if (LastRenovationDate.HasValue)
             {
                 builder.AppendFormat("Last renovated on: {0}\n", LastRenovationDate);
