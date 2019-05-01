@@ -48,6 +48,8 @@ The DotNetHowToAutocomplete sample demonstrates several techniques for adding au
 * Retrieve suggestions and auto-complete using the .Net SDK and REST API
 * Support client-side caching to improve performance 
 
+The DotNetHowToEncryptionUsingCMK sample demonstrates how to create a synonym-map and an index that are encrypted with customer-managed key in Azure Key Vault.
+
 ## Running the DotNetHowTo sample
 
 * Open the DotNetHowTo.sln project in Visual Studio
@@ -100,6 +102,11 @@ See [Security filters for trimming Azure Search results using Active Directory i
 ## Running the DotNetHowToAutocomplete sample
 
 * Open the DotNetHowToAutocomplete.sln project in Visual Studio
+* Compile and Run the project
+
+## Running the DotNetHowToEncryptionUsingCMK sample
+
+* Open the DotNetHowToEncryptionUsingCMK.sln project in Visual Studio
 * Compile and Run the project
 
 ## More information
