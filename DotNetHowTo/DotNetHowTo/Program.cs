@@ -20,18 +20,20 @@ namespace AzureSearch.SDKHowTo
 
             SearchServiceClient serviceClient = CreateSearchServiceClient(configuration);
 
+            string indexName = configuration["SearchIndexName"];
+
             Console.WriteLine("{0}", "Deleting index...\n");
-            DeleteHotelsIndexIfExists(serviceClient);
+            DeleteIndexIfExists(indexName, serviceClient);
 
             Console.WriteLine("{0}", "Creating index...\n");
-            CreateHotelsIndex(serviceClient);
+            CreateIndex(indexName, serviceClient);
 
-            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(indexName);
 
             Console.WriteLine("{0}", "Uploading documents...\n");
             UploadDocuments(indexClient);
 
-            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient(configuration);
+            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient(indexName, configuration);
 
             RunQueries(indexClientForQueries);
 
@@ -48,28 +50,28 @@ namespace AzureSearch.SDKHowTo
             return serviceClient;
         }
 
-        private static SearchIndexClient CreateSearchIndexClient(IConfigurationRoot configuration)
+        private static SearchIndexClient CreateSearchIndexClient(string indexName, IConfigurationRoot configuration)
         {
             string searchServiceName = configuration["SearchServiceName"];
             string queryApiKey = configuration["SearchServiceQueryApiKey"];
 
-            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(queryApiKey));
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, indexName, new SearchCredentials(queryApiKey));
             return indexClient;
         }
 
-        private static void DeleteHotelsIndexIfExists(SearchServiceClient serviceClient)
+        private static void DeleteIndexIfExists(string indexName, SearchServiceClient serviceClient)
         {
-            if (serviceClient.Indexes.Exists("hotels"))
+            if (serviceClient.Indexes.Exists(indexName))
             {
-                serviceClient.Indexes.Delete("hotels");
+                serviceClient.Indexes.Delete(indexName);
             }
         }
 
-        private static void CreateHotelsIndex(SearchServiceClient serviceClient)
+        private static void CreateIndex(string indexName, SearchServiceClient serviceClient)
         {
             var definition = new Index()
             {
-                Name = "hotels",
+                Name = indexName,
                 Fields = FieldBuilder.BuildForType<Hotel>()
             };
 
@@ -78,45 +80,181 @@ namespace AzureSearch.SDKHowTo
 
 #if HowToExample
 
+        // Upload documents in a single Upload request.
         private static void UploadDocuments(ISearchIndexClient indexClient)
         {
             var hotels = new Hotel[]
             {
                 new Hotel()
-                { 
-                    HotelId = "1", 
-                    BaseRate = 199.0, 
-                    Description = "Best hotel in town",
-                    DescriptionFr = "Meilleur hôtel en ville",
-                    HotelName = "Fancy Stay",
-                    Category = "Luxury", 
-                    Tags = new[] { "pool", "view", "wifi", "concierge" },
-                    ParkingIncluded = false, 
-                    SmokingAllowed = false,
-                    LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
-                    Rating = 5, 
-                    Location = GeographyPoint.Create(47.678581, -122.131577)
+                {
+                    HotelId = "1",
+                    HotelName = "Secret Point Motel",
+                    Description = "The hotel is ideally located on the main commercial artery of the city in the heart of New York. A few minutes away is Time's Square and the historic centre of the city, as well as other places of interest that make New York one of America's most attractive and cosmopolitan cities.",
+                    DescriptionFr = "L'hôtel est idéalement situé sur la principale artère commerciale de la ville en plein cœur de New York. A quelques minutes se trouve la place du temps et le centre historique de la ville, ainsi que d'autres lieux d'intérêt qui font de New York l'une des villes les plus attractives et cosmopolites de l'Amérique.",
+                    Category = "Boutique",
+                    Tags = new[] { "pool", "air conditioning", "concierge" },
+                    ParkingIncluded = false,
+                    LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
+                    Rating = 3.6,
+                    Location = GeographyPoint.Create(40.760586, -73.975403),
+                    Address = new Address()
+                    {
+                        StreetAddress = "677 5th Ave",
+                        City = "New York",
+                        StateProvince = "NY",
+                        PostalCode = "10022",
+                        Country = "USA"
+                    },
+                    Rooms = new Room[]
+                    {
+                        new Room()
+                        {
+                            Description = "Budget Room, 1 Queen Bed (Cityside)",
+                            DescriptionFr = "Chambre Économique, 1 grand lit (côté ville)",
+                            Type = "Budget Room",
+                            BaseRate = 96.99,
+                            BedOptions = "1 Queen Bed",
+                            SleepsCount = 2,
+                            SmokingAllowed = true,
+                            Tags = new[] { "vcr/dvd" }
+                        },
+                        new Room()
+                        {
+                            Description = "Budget Room, 1 King Bed (Mountain View)",
+                            DescriptionFr = "Chambre Économique, 1 très grand lit (Mountain View)",
+                            Type = "Budget Room",
+                            BaseRate = 80.99,
+                            BedOptions = "1 King Bed",
+                            SleepsCount = 2,
+                            SmokingAllowed = true,
+                            Tags = new[] { "vcr/dvd", "jacuzzi tub" }
+                        },
+                        new Room()
+                        {
+                            Description = "Deluxe Room, 2 Double Beds (City View)",
+                            DescriptionFr = "Chambre Deluxe, 2 lits doubles (vue ville)",
+                            Type = "Deluxe Room",
+                            BaseRate = 150.99,
+                            BedOptions = "2 Double Beds",
+                            SleepsCount = 2,
+                            SmokingAllowed = false,
+                            Tags = new[] { "suite", "bathroom shower", "coffee maker" }
+                        }
+                    }
                 },
                 new Hotel()
-                { 
-                    HotelId = "2", 
-                    BaseRate = 79.99,
-                    Description = "Cheapest hotel in town",
-                    DescriptionFr = "Hôtel le moins cher en ville",
-                    HotelName = "Roach Motel",
-                    Category = "Budget",
-                    Tags = new[] { "motel", "budget" },
-                    ParkingIncluded = true,
-                    SmokingAllowed = true,
-                    LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
-                    Rating = 1,
-                    Location = GeographyPoint.Create(49.678581, -122.131577)
+                {
+                    HotelId = "2",
+                    HotelName = "Twin Dome Motel",
+                    Description = "The hotel is situated in a  nineteenth century plaza, which has been expanded and renovated to the highest architectural standards to create a modern, functional and first-class hotel in which art and unique historical elements coexist with the most modern comforts.",
+                    DescriptionFr = "L'hôtel est situé dans une place du XIXe siècle, qui a été agrandie et rénovée aux plus hautes normes architecturales pour créer un hôtel moderne, fonctionnel et de première classe dans lequel l'art et les éléments historiques uniques coexistent avec le confort le plus moderne.",
+                    Category = "Boutique",
+                    Tags = new[] { "pool", "free wifi", "concierge" },
+                    ParkingIncluded = false,
+                    LastRenovationDate =  new DateTimeOffset(1979, 2, 18, 0, 0, 0, TimeSpan.Zero),
+                    Rating = 3.60,
+                    Location = GeographyPoint.Create(27.384417, -82.452843),
+                    Address = new Address()
+                    {
+                        StreetAddress = "140 University Town Center Dr",
+                        City = "Sarasota",
+                        StateProvince = "FL",
+                        PostalCode = "34243",
+                        Country = "USA"
+                    },
+                    Rooms = new Room[]
+                    {
+                        new Room()
+                        {
+                            Description = "Suite, 2 Double Beds (Mountain View)",
+                            DescriptionFr = "Suite, 2 lits doubles (vue sur la montagne)",
+                            Type = "Suite",
+                            BaseRate = 250.99,
+                            BedOptions = "2 Double Beds",
+                            SleepsCount = 2,
+                            SmokingAllowed = false,
+                            Tags = new[] { "Room Tags" }
+                        },
+                        new Room()
+                        {
+                            Description = "Standard Room, 1 Queen Bed (City View)",
+                            DescriptionFr = "Chambre Standard, 1 grand lit (vue ville)",
+                            Type = "Standard Room",
+                            BaseRate = 121.99,
+                            BedOptions = "1 Queen Bed",
+                            SleepsCount = 2,
+                            SmokingAllowed = false,
+                            Tags = new[] { "jacuzzi tub" }
+                        },
+                        new Room()
+                        {
+                            Description = "Budget Room, 1 King Bed (Waterfront View)",
+                            DescriptionFr = "Chambre Économique, 1 très grand lit (vue sur le front de mer)",
+                            Type = "Budget Room",
+                            BaseRate = 88.99,
+                            BedOptions = "1 King Bed",
+                            SleepsCount = 2,
+                            SmokingAllowed = false,
+                            Tags = new[] { "suite", "tv", "jacuzzi tub" }
+                        }
+                    }
                 },
-                new Hotel() 
-                { 
-                    HotelId = "3", 
-                    BaseRate = 129.99,
-                    Description = "Close to town hall and the river"
+                new Hotel()
+                {
+                    HotelId = "3",
+                    HotelName = "Triple Landscape Hotel",
+                    Description = "The Hotel stands out for its gastronomic excellence under the management of William Dough, who advises on and oversees all of the Hotel’s restaurant services.",
+                    DescriptionFr = "L'hôtel est situé dans une place du XIXe siècle, qui a été agrandie et rénovée aux plus hautes normes architecturales pour créer un hôtel moderne, fonctionnel et de première classe dans lequel l'art et les éléments historiques uniques coexistent avec le confort le plus moderne.",
+                    Category = "Resort and Spa",
+                    Tags = new[] { "air conditioning", "bar", "continental breakfast" },
+                    ParkingIncluded = true,
+                    LastRenovationDate = new DateTimeOffset(2015, 9, 20, 0, 0, 0, TimeSpan.Zero),
+                    Rating = 4.80,
+                    Location = GeographyPoint.Create(33.84643, -84.362465),
+                    Address = new Address()
+                    {
+                        StreetAddress = "3393 Peachtree Rd",
+                        City = "Atlanta",
+                        StateProvince = "GA",
+                        PostalCode = "30326",
+                        Country = "USA"
+                    },
+                    Rooms = new Room[]
+                    {
+                        new Room()
+                        {
+                            Description = "Standard Room, 2 Queen Beds (Amenities)",
+                            DescriptionFr = "Chambre Standard, 2 grands lits (Services)",
+                            Type = "Standard Room",
+                            BaseRate = 101.99,
+                            BedOptions = "2 Queen Beds",
+                            SleepsCount = 4,
+                            SmokingAllowed = true,
+                            Tags = new[] { "vcr/dvd", "vcr/dvd" }
+                        },
+                        new Room ()
+                        {
+                            Description = "Standard Room, 2 Double Beds (Waterfront View)",
+                            DescriptionFr = "Chambre Standard, 2 lits doubles (vue sur le front de mer)",
+                            Type = "Standard Room",
+                            BaseRate = 106.99,
+                            BedOptions = "2 Double Beds",
+                            SleepsCount = 2,
+                            SmokingAllowed = true,
+                            Tags = new[] { "coffee maker" }
+                        },
+                        new Room()
+                        {
+                            Description = "Deluxe Room, 2 Double Beds (Cityside)",
+                            DescriptionFr = "Chambre Deluxe, 2 lits doubles (Cityside)",
+                            Type = "Budget Room",
+                            BaseRate = 180.99,
+                            BedOptions = "2 Double Beds",
+                            SleepsCount = 2,
+                            SmokingAllowed = true,
+                            Tags = new[] { "suite" }
+                         }
+                    }
                 }
             };
 
@@ -141,53 +279,190 @@ namespace AzureSearch.SDKHowTo
         }
 
 #else
-
+        // Upload documents as a batch.
         private static void UploadDocuments(ISearchIndexClient indexClient)
         {
-            var actions =
-                new IndexAction<Hotel>[]
-                {
-                    IndexAction.Upload(
-                        new Hotel()
+            var actions = new IndexAction<Hotel>[]
+            {
+                IndexAction.Upload(
+                    new Hotel()
+                    {
+                        HotelId = "1",
+                        HotelName = "Secret Point Motel",
+                        Description = "The hotel is ideally located on the main commercial artery of the city in the heart of New York. A few minutes away is Time's Square and the historic centre of the city, as well as other places of interest that make New York one of America's most attractive and cosmopolitan cities.",
+                        DescriptionFr = "L'hôtel est idéalement situé sur la principale artère commerciale de la ville en plein cœur de New York. A quelques minutes se trouve la place du temps et le centre historique de la ville, ainsi que d'autres lieux d'intérêt qui font de New York l'une des villes les plus attractives et cosmopolites de l'Amérique.",
+                        Category = "Boutique",
+                        Tags = new[] { "pool", "air conditioning", "concierge" },
+                        ParkingIncluded = false,
+                        LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
+                        Rating = 3.6,
+                        Location = GeographyPoint.Create(40.760586, -73.975403),
+                        Address = new Address()
                         {
-                            HotelId = "1",
-                            BaseRate = 199.0,
-                            Description = "Best hotel in town",
-                            DescriptionFr = "Meilleur hôtel en ville",
-                            HotelName = "Fancy Stay",
-                            Category = "Luxury",
-                            Tags = new[] { "pool", "view", "wifi", "concierge" },
-                            ParkingIncluded = false,
-                            SmokingAllowed = false,
-                            LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero),
-                            Rating = 5,
-                            Location = GeographyPoint.Create(47.678581, -122.131577)
-                        }),
-                    IndexAction.Upload(
-                        new Hotel()
+                            StreetAddress = "677 5th Ave",
+                            City = "New York",
+                            StateProvince = "NY",
+                            PostalCode = "10022",
+                            Country = "USA"
+                        },
+                        Rooms = new Room[]
                         {
-                            HotelId = "2",
-                            BaseRate = 79.99,
-                            Description = "Cheapest hotel in town",
-                            DescriptionFr = "Hôtel le moins cher en ville",
-                            HotelName = "Roach Motel",
-                            Category = "Budget",
-                            Tags = new[] { "motel", "budget" },
-                            ParkingIncluded = true,
-                            SmokingAllowed = true,
-                            LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
-                            Rating = 1,
-                            Location = GeographyPoint.Create(49.678581, -122.131577)
-                        }),
-                    IndexAction.MergeOrUpload(
-                        new Hotel()
+                            new Room()
+                            {
+                                Description = "Budget Room, 1 Queen Bed (Cityside)",
+                                DescriptionFr = "Chambre Économique, 1 grand lit (côté ville)",
+                                Type = "Budget Room",
+                                BaseRate = 96.99,
+                                BedOptions = "1 Queen Bed",
+                                SleepsCount = 2,
+                                SmokingAllowed = true,
+                                Tags = new[] { "vcr/dvd" }
+                            },
+                            new Room()
+                            {
+                                Description = "Budget Room, 1 King Bed (Mountain View)",
+                                DescriptionFr = "Chambre Économique, 1 très grand lit (Mountain View)",
+                                Type = "Budget Room",
+                                BaseRate = 80.99,
+                                BedOptions = "1 King Bed",
+                                SleepsCount = 2,
+                                SmokingAllowed = true,
+                                Tags = new[] { "vcr/dvd", "jacuzzi tub" }
+                            },
+                            new Room()
+                            {
+                                Description = "Deluxe Room, 2 Double Beds (City View)",
+                                DescriptionFr = "Chambre Deluxe, 2 lits doubles (vue ville)",
+                                Type = "Deluxe Room",
+                                BaseRate = 150.99,
+                                BedOptions = "2 Double Beds",
+                                SleepsCount = 2,
+                                SmokingAllowed = false,
+                                Tags = new[] { "suite", "bathroom shower", "coffee maker" }
+                            }
+                        }
+                    }
+                ),
+                IndexAction.Upload(
+                    new Hotel()
+                    {
+                        HotelId = "2",
+                        HotelName = "Twin Dome Motel",
+                        Description = "The hotel is situated in a  nineteenth century plaza, which has been expanded and renovated to the highest architectural standards to create a modern, functional and first-class hotel in which art and unique historical elements coexist with the most modern comforts.",
+                        DescriptionFr = "L'hôtel est situé dans une place du XIXe siècle, qui a été agrandie et rénovée aux plus hautes normes architecturales pour créer un hôtel moderne, fonctionnel et de première classe dans lequel l'art et les éléments historiques uniques coexistent avec le confort le plus moderne.",
+                        Category = "Boutique",
+                        Tags = new[] { "pool", "free wifi", "concierge" },
+                        ParkingIncluded = false,
+                        LastRenovationDate =  new DateTimeOffset(1979, 2, 18, 0, 0, 0, TimeSpan.Zero),
+                        Rating = 3.60,
+                        Location = GeographyPoint.Create(27.384417, -82.452843),
+                        Address = new Address()
                         {
-                            HotelId = "3",
-                            BaseRate = 129.99,
-                            Description = "Close to town hall and the river"
-                        }),
-                    IndexAction.Delete(new Hotel() { HotelId = "6" })
-                };
+                            StreetAddress = "140 University Town Center Dr",
+                            City = "Sarasota",
+                            StateProvince = "FL",
+                            PostalCode = "34243",
+                            Country = "USA"
+                        },
+                        Rooms = new Room[]
+                        {
+                            new Room()
+                            {
+                                Description = "Suite, 2 Double Beds (Mountain View)",
+                                DescriptionFr = "Suite, 2 lits doubles (vue sur la montagne)",
+                                Type = "Suite",
+                                BaseRate = 250.99,
+                                BedOptions = "2 Double Beds",
+                                SleepsCount = 2,
+                                SmokingAllowed = false,
+                                Tags = new[] { "Room Tags" }
+                            },
+                            new Room()
+                            {
+                                Description = "Standard Room, 1 Queen Bed (City View)",
+                                DescriptionFr = "Chambre Standard, 1 grand lit (vue ville)",
+                                Type = "Standard Room",
+                                BaseRate = 121.99,
+                                BedOptions = "1 Queen Bed",
+                                SleepsCount = 2,
+                                SmokingAllowed = false,
+                                Tags = new[] { "jacuzzi tub" }
+                            },
+                            new Room()
+                            {
+                                Description = "Budget Room, 1 King Bed (Waterfront View)",
+                                DescriptionFr = "Chambre Économique, 1 très grand lit (vue sur le front de mer)",
+                                Type = "Budget Room",
+                                BaseRate = 88.99,
+                                BedOptions = "1 King Bed",
+                                SleepsCount = 2,
+                                SmokingAllowed = false,
+                                Tags = new[] { "suite", "tv", "jacuzzi tub" }
+                            }
+                        }
+                    }
+                ),
+                IndexAction.MergeOrUpload(
+                    new Hotel()
+                    {
+                        HotelId = "3",
+                        HotelName = "Triple Landscape Hotel",
+                        Description = "The Hotel stands out for its gastronomic excellence under the management of William Dough, who advises on and oversees all of the Hotel’s restaurant services.",
+                        DescriptionFr = "L'hôtel est situé dans une place du XIXe siècle, qui a été agrandie et rénovée aux plus hautes normes architecturales pour créer un hôtel moderne, fonctionnel et de première classe dans lequel l'art et les éléments historiques uniques coexistent avec le confort le plus moderne.",
+                        Category = "Resort and Spa",
+                        Tags = new[] { "air conditioning", "bar", "continental breakfast" },
+                        ParkingIncluded = true,
+                        LastRenovationDate = new DateTimeOffset(2015, 9, 20, 0, 0, 0, TimeSpan.Zero),
+                        Rating = 4.80,
+                        Location = GeographyPoint.Create(33.84643, -84.362465),
+                        Address = new Address()
+                        {
+                            StreetAddress = "3393 Peachtree Rd",
+                            City = "Atlanta",
+                            StateProvince = "GA",
+                            PostalCode = "30326",
+                            Country = "USA"
+                        },
+                        Rooms = new Room[]
+                        {
+                            new Room()
+                            {
+                                Description = "Standard Room, 2 Queen Beds (Amenities)",
+                                DescriptionFr = "Chambre Standard, 2 grands lits (Services)",
+                                Type = "Standard Room",
+                                BaseRate = 101.99,
+                                BedOptions = "2 Queen Beds",
+                                SleepsCount = 4,
+                                SmokingAllowed = true,
+                                Tags = new[] { "vcr/dvd", "vcr/dvd" }
+                            },
+                            new Room ()
+                            {
+                                Description = "Standard Room, 2 Double Beds (Waterfront View)",
+                                DescriptionFr = "Chambre Standard, 2 lits doubles (vue sur le front de mer)",
+                                Type = "Standard Room",
+                                BaseRate = 106.99,
+                                BedOptions = "2 Double Beds",
+                                SleepsCount = 2,
+                                SmokingAllowed = true,
+                                Tags = new[] { "coffee maker" }
+                            },
+                            new Room()
+                            {
+                                Description = "Deluxe Room, 2 Double Beds (Cityside)",
+                                DescriptionFr = "Chambre Deluxe, 2 lits doubles (Cityside)",
+                                Type = "Budget Room",
+                                BaseRate = 180.99,
+                                BedOptions = "2 Double Beds",
+                                SleepsCount = 2,
+                                SmokingAllowed = true,
+                                Tags = new[] { "suite" }
+                            }
+                        }
+                    }
+                ),
+                IndexAction.Delete(new Hotel() { HotelId = "6" })
+            };
 
             var batch = IndexBatch.New(actions);
 
@@ -215,26 +490,26 @@ namespace AzureSearch.SDKHowTo
             SearchParameters parameters;
             DocumentSearchResult<Hotel> results;
 
-            Console.WriteLine("Search the entire index for the term 'budget' and return only the hotelName field:\n");
+            Console.WriteLine("Search the entire index for the term 'motel' and return only the HotelName field:\n");
 
             parameters =
                 new SearchParameters()
                 {
-                    Select = new[] { "hotelName" }
+                    Select = new[] { "HotelName" }
                 };
 
-            results = indexClient.Documents.Search<Hotel>("budget", parameters);
+            results = indexClient.Documents.Search<Hotel>("motel", parameters);
 
             WriteDocuments(results);
 
-            Console.Write("Apply a filter to the index to find hotels cheaper than $150 per night, ");
+            Console.Write("Apply a filter to the index to find hotels with a room cheaper than $100 per night, ");
             Console.WriteLine("and return the hotelId and description:\n");
 
             parameters =
                 new SearchParameters()
                 {
-                    Filter = "baseRate lt 150",
-                    Select = new[] { "hotelId", "description" }
+                    Filter = "Rooms/any(r: r/BaseRate lt 100)",
+                    Select = new[] { "HotelId", "Description" }
                 };
 
             results = indexClient.Documents.Search<Hotel>("*", parameters);
@@ -248,8 +523,8 @@ namespace AzureSearch.SDKHowTo
             parameters =
                 new SearchParameters()
                 {
-                    OrderBy = new[] { "lastRenovationDate desc" },
-                    Select = new[] { "hotelName", "lastRenovationDate" },
+                    OrderBy = new[] { "LastRenovationDate desc" },
+                    Select = new[] { "HotelName", "LastRenovationDate" },
                     Top = 2
                 };
 
@@ -257,10 +532,10 @@ namespace AzureSearch.SDKHowTo
 
             WriteDocuments(results);
 
-            Console.WriteLine("Search the entire index for the term 'motel':\n");
+            Console.WriteLine("Search the entire index for the term 'hotel':\n");
 
             parameters = new SearchParameters();
-            results = indexClient.Documents.Search<Hotel>("motel", parameters);
+            results = indexClient.Documents.Search<Hotel>("hotel", parameters);
 
             WriteDocuments(results);
         }

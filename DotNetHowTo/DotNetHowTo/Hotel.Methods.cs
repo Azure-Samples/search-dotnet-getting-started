@@ -14,62 +14,74 @@
 
             if (!String.IsNullOrEmpty(HotelId))
             {
-                builder.AppendFormat("ID: {0}\t", HotelId);
-            }
-
-            if (BaseRate.HasValue)
-            {
-                builder.AppendFormat("Base rate: {0}\t", BaseRate);
-            }
-
-            if (!String.IsNullOrEmpty(Description))
-            {
-                builder.AppendFormat("Description: {0}\t", Description);
-            }
-
-            if (!String.IsNullOrEmpty(DescriptionFr))
-            {
-                builder.AppendFormat("Description (French): {0}\t", DescriptionFr);
+                builder.AppendFormat("HotelId: {0}\n", HotelId);
             }
 
             if (!String.IsNullOrEmpty(HotelName))
             {
-                builder.AppendFormat("Name: {0}\t", HotelName);
+                builder.AppendFormat("Name: {0}\n", HotelName);
             }
 
+            if (!String.IsNullOrEmpty(Description))
+            {
+                builder.AppendFormat("Description: {0}\n", Description);
+            }
+
+            if (!String.IsNullOrEmpty(DescriptionFr))
+            {
+                builder.AppendFormat("Description (French): {0}\n", DescriptionFr);
+            }
+            
             if (!String.IsNullOrEmpty(Category))
             {
-                builder.AppendFormat("Category: {0}\t", Category);
+                builder.AppendFormat("Category: {0}\n", Category);
             }
 
             if (Tags != null && Tags.Length > 0)
             {
-                builder.AppendFormat("Tags: [{0}]\t", String.Join(", ", Tags));
+                builder.AppendFormat("Tags: [ {0} ]\n", String.Join(", ", Tags));
             }
 
             if (ParkingIncluded.HasValue)
             {
-                builder.AppendFormat("Parking included: {0}\t", ParkingIncluded.Value ? "yes" : "no");
+                builder.AppendFormat("Parking included: {0}\n", ParkingIncluded.Value ? "yes" : "no");
             }
 
             if (SmokingAllowed.HasValue)
             {
-                builder.AppendFormat("Smoking allowed: {0}\t", SmokingAllowed.Value ? "yes" : "no");
+                builder.AppendFormat("Smoking allowed: {0}\n", SmokingAllowed.Value ? "yes" : "no");
             }
 
             if (LastRenovationDate.HasValue)
             {
-                builder.AppendFormat("Last renovated on: {0}\t", LastRenovationDate);
+                builder.AppendFormat("Last renovated on: {0}\n", LastRenovationDate);
             }
 
             if (Rating.HasValue)
             {
-                builder.AppendFormat("Rating: {0}/5\t", Rating);
+                builder.AppendFormat("Rating: {0}\n", Rating);
+            }
+
+            if (Address != null && !Address.IsEmpty)
+            {
+                builder.AppendFormat("Address: \n{0}\n", Address.ToString());
             }
 
             if (Location != null)
             {
-                builder.AppendFormat("Location: Latitude {0}, longitude {1}\t", Location.Latitude, Location.Longitude);
+                builder.AppendFormat("Location: Latitude {0}, Longitude {1}\n", Location.Latitude, Location.Longitude);
+            }
+
+            if (Rooms != null)
+            {
+                builder.AppendFormat("\nRooms: \n");
+                foreach (var room in Rooms)
+                {
+                    if (room != null)
+                    {
+                        builder.AppendFormat("{0}\n\n", room.ToString());
+                    }
+                }
             }
 
             return builder.ToString();
