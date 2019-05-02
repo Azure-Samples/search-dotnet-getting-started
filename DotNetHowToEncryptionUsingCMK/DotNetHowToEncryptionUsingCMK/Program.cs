@@ -99,10 +99,10 @@ namespace AzureSearch.SDKHowTo
 
         private static EncryptionKey GetEncryptionKeyFromConfiguration(IConfigurationRoot configuration)
         {
-            Uri keyVaultKeyUri = new Uri(configuration["AzureKeyVaultKeyUrl"]);
+            Uri keyVaultKeyUri = new Uri(configuration["AzureKeyVaultKeyIdentifier"]);
             if (!keyVaultKeyUri.Host.Contains("vault.azure.net") || keyVaultKeyUri.Segments.Length != 4 || keyVaultKeyUri.Segments[1] != "keys/")
             {
-                throw new ArgumentException("Invalid 'AzureKeyVaultKeyUrl' - Expected format: 'https://<key-vault-name>.vault.azure.net/keys/<key-name>/<key-version>'", "AzureKeyVaultKeyUrl");
+                throw new ArgumentException("Invalid 'AzureKeyVaultKeyIdentifier' - Expected format: 'https://<key-vault-name>.vault.azure.net/keys/<key-name>/<key-version>'", "AzureKeyVaultKeyIdentifier");
             }
 
             var encryptionKey = new EncryptionKey
@@ -125,8 +125,6 @@ namespace AzureSearch.SDKHowTo
             encryptionKey.Validate();
             return encryptionKey;
         }
-
-#if HowToExample
 
         private static void UploadDocuments(ISearchIndexClient indexClient)
         {
@@ -190,129 +188,30 @@ namespace AzureSearch.SDKHowTo
             Thread.Sleep(2000);
         }
 
-#else
-
-        private static void UploadDocuments(ISearchIndexClient indexClient)
-        {
-            var actions =
-                new IndexAction<Hotel>[]
-                {
-                    IndexAction.Upload(
-                        new Hotel()
-                        {
-                            HotelId = "1",
-                            BaseRate = 199.0,
-                            Description = "Best hotel in town",
-                            DescriptionFr = "Meilleur hôtel en ville",
-                            HotelName = "Fancy Stay",
-                            Category = "Luxury",
-                            Tags = new[] { "pool", "view", "wifi", "concierge" },
-                            ParkingIncluded = false,
-                            SmokingAllowed = false,
-                            LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero),
-                            Rating = 5,
-                            Location = GeographyPoint.Create(47.678581, -122.131577)
-                        }),
-                    IndexAction.Upload(
-                        new Hotel()
-                        {
-                            HotelId = "2",
-                            BaseRate = 79.99,
-                            Description = "Cheapest hotel in town",
-                            DescriptionFr = "Hôtel le moins cher en ville",
-                            HotelName = "Roach Motel",
-                            Category = "Budget",
-                            Tags = new[] { "motel", "budget" },
-                            ParkingIncluded = true,
-                            SmokingAllowed = true,
-                            LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
-                            Rating = 1,
-                            Location = GeographyPoint.Create(49.678581, -122.131577)
-                        }),
-                    IndexAction.MergeOrUpload(
-                        new Hotel()
-                        {
-                            HotelId = "3",
-                            BaseRate = 129.99,
-                            Description = "Close to town hall and the river"
-                        }),
-                    IndexAction.Delete(new Hotel() { HotelId = "6" })
-                };
-
-            var batch = IndexBatch.New(actions);
-
-            try
-            {
-                indexClient.Documents.Index(batch);
-            }
-            catch (IndexBatchException e)
-            {
-                // Sometimes when your Search service is under load, indexing will fail for some of the documents in
-                // the batch. Depending on your application, you can take compensating actions like delaying and
-                // retrying. For this simple demo, we just log the failed document keys and continue.
-                Console.WriteLine(
-                    "Failed to index some of the documents: {0}",
-                    String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key)));
-            }
-
-            Console.WriteLine("Waiting for documents to be indexed...\n");
-            Thread.Sleep(2000);
-        }
-#endif
-
         private static void RunQueries(ISearchIndexClient indexClient)
         {
             SearchParameters parameters;
             DocumentSearchResult<Hotel> results;
 
-            Console.WriteLine("Search the entire index for the term 'budget' and return only the hotelName field:\n");
+            Console.WriteLine("Search with terms nonexistent in the index:\n");
 
             parameters =
                 new SearchParameters()
                 {
-                    Select = new[] { "hotelName" }
-                };
-
-            results = indexClient.Documents.Search<Hotel>("budget", parameters);
-
-            WriteDocuments(results);
-
-            Console.Write("Apply a filter to the index to find hotels cheaper than $150 per night, ");
-            Console.WriteLine("and return the hotelId and description:\n");
-
-            parameters =
-                new SearchParameters()
-                {
-                    Filter = "baseRate lt 150",
-                    Select = new[] { "hotelId", "description" }
-                };
-
-            results = indexClient.Documents.Search<Hotel>("*", parameters);
-
-            WriteDocuments(results);
-
-            Console.Write("Search the entire index, order by a specific field (lastRenovationDate) ");
-            Console.Write("in descending order, take the top two results, and show only hotelName and ");
-            Console.WriteLine("lastRenovationDate:\n");
-
-            parameters =
-                new SearchParameters()
-                {
-                    OrderBy = new[] { "lastRenovationDate desc" },
-                    Select = new[] { "hotelName", "category", "lastRenovationDate" },
-                    Top = 2
+                    SearchFields = new[] { "category", "tags" },
+                    Select = new[] { "hotelName", "category", "tags" },
                 };
 
             Console.WriteLine("Search the entire index for the phrase \"five star\":\n");
             results = indexClient.Documents.Search<Hotel>("\"five star\"", parameters);
-
             WriteDocuments(results);
 
-            Console.WriteLine("Search the entire index for the term 'motel':\n");
+            Console.WriteLine("Search the entire index for the term 'internet':\n");
+            results = indexClient.Documents.Search<Hotel>("internet", parameters);
+            WriteDocuments(results);
 
-            parameters = new SearchParameters();
-            results = indexClient.Documents.Search<Hotel>("motel", parameters);
-
+            Console.WriteLine("Search the entire index for the terms 'economy' AND 'hotel':\n");
+            results = indexClient.Documents.Search<Hotel>("economy AND hotel", parameters);
             WriteDocuments(results);
         }
 
