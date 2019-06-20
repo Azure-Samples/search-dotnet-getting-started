@@ -28,7 +28,6 @@ namespace AzureSearch.SDKHowTo
             Console.WriteLine("{0}", "Creating index...\n");
             CreateIndex(indexName, serviceClient);
 
-
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(indexName);
 
             Console.WriteLine("{0}", "Uploading documents...\n");
