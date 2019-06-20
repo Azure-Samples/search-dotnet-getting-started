@@ -28,6 +28,7 @@ namespace AzureSearch.SDKHowTo
             Console.WriteLine("{0}", "Creating index...\n");
             CreateIndex(indexName, serviceClient);
 
+
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(indexName);
 
             Console.WriteLine("{0}", "Uploading documents...\n");
@@ -532,9 +533,12 @@ namespace AzureSearch.SDKHowTo
 
             WriteDocuments(results);
 
-            Console.WriteLine("Search the entire index for the term 'hotel':\n");
+            Console.WriteLine("Search the hotel names for the term 'hotel':\n");
 
-            parameters = new SearchParameters();
+            parameters = new SearchParameters()
+            {
+                SearchFields = new[] { "HotelName" }
+            };
             results = indexClient.Documents.Search<Hotel>("hotel", parameters);
 
             WriteDocuments(results);
