@@ -1,7 +1,12 @@
 ---
-services: search
-platforms: dotnet
-author: brjohnst
+page_type: sample
+description: "This sample includes several projects that are meant to help when getting started with Azure Search and .NET."
+languages:
+- csharp
+products:
+- dotnet
+- azure
+- azure-search
 ---
 
 # Getting Started with Azure Search using .NET
