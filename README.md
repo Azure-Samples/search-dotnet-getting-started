@@ -11,7 +11,7 @@ products:
 
 # Getting Started with Azure Search using .NET
 
-This sample includes several projects that are meant to help when getting started with Azure Search and .NET. It leverages the [Azure Search .NET SDK](https://aka.ms/search-sdk) as well as many best practices.
+This sample includes several projects that are meant to help get started with Azure Search and .NET. It leverages the [Azure Search .NET SDK](https://aka.ms/search-sdk) as well as many best practices.
 
 The DotNetHowTo sample is a simple .NET Core console application that shows how to:
 
