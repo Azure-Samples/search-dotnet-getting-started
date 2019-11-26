@@ -55,7 +55,7 @@ namespace AutocompleteTutorial.Controllers
                 sp.HighlightPostTag = "</b>";
             }
 
-            DocumentSuggestResult suggestResult = _indexClient.Documents.Suggest(term, "sg",sp);
+            DocumentSuggestResult<Document> suggestResult = _indexClient.Documents.Suggest(term, "sg",sp);
 
             // Convert the suggest query results to a list that can be displayed in the client.
             List<string> suggestions = suggestResult.Results.Select(x => x.Text).ToList();
@@ -99,7 +99,7 @@ namespace AutocompleteTutorial.Controllers
             };
 
 
-            DocumentSearchResult searchResult = _indexClient.Documents.Search("*", sp);
+            DocumentSearchResult<Document> searchResult = _indexClient.Documents.Search("*", sp);
 
             // Convert the suggest query results to a list that can be displayed in the client.
 
