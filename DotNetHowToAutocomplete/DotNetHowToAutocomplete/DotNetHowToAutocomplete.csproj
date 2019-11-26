@@ -46,39 +46,40 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.Search, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.Search.6.0.0-preview\lib\net452\Microsoft.Azure.Search.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Search, Version=10.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.Search.10.1.0\lib\net461\Microsoft.Azure.Search.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Azure.Search.Common, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.Search.Common.6.0.0-preview\lib\net452\Microsoft.Azure.Search.Common.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Search.Common, Version=10.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.Search.Common.10.1.0\lib\net461\Microsoft.Azure.Search.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Azure.Search.Data, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.Search.Data.6.0.0-preview\lib\net452\Microsoft.Azure.Search.Data.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Search.Data, Version=10.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.Search.Data.10.1.0\lib\net461\Microsoft.Azure.Search.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Azure.Search.Service, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.Search.Service.6.0.0-preview\lib\net452\Microsoft.Azure.Search.Service.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Search.Service, Version=10.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.Search.Service.10.1.0\lib\net461\Microsoft.Azure.Search.Service.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.8.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Rest.ClientRuntime, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Rest.ClientRuntime.2.3.11\lib\net452\Microsoft.Rest.ClientRuntime.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Rest.ClientRuntime.2.3.20\lib\net461\Microsoft.Rest.ClientRuntime.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Rest.ClientRuntime.Azure, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Rest.ClientRuntime.Azure.3.3.12\lib\net452\Microsoft.Rest.ClientRuntime.Azure.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Rest.ClientRuntime.Azure.3.3.18\lib\net452\Microsoft.Rest.ClientRuntime.Azure.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Spatial, Version=7.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Spatial.7.2.0\lib\portable-net45+win8+wpa81\Microsoft.Spatial.dll</HintPath>
+    <Reference Include="Microsoft.Spatial, Version=7.5.3.21218, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Spatial.7.5.3\lib\portable-net45+win8+wpa81\Microsoft.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
