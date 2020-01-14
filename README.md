@@ -6,7 +6,7 @@ languages:
 products:
 - dotnet
 - azure
-- azure-search
+- azure-cognitive-search
 ---
 
 # Getting Started with Azure Search using .NET
