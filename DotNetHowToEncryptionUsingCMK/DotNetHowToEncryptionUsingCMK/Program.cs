@@ -79,9 +79,7 @@ namespace AzureSearch.SDKHowTo
             {
                 Name = "desc-synonymmap",
                 Synonyms = "hotel, motel\ninternet,wifi\nfive star=>luxury\neconomy,inexpensive=>budget",
-
-                //No longer required for v10.1 >> if you need this downgrade Search SDK to v8.0.0-preview
-                //EncryptionKey = GetEncryptionKeyFromConfiguration(configuration)
+                EncryptionKey = GetEncryptionKeyFromConfiguration(configuration)
             };
 
             serviceClient.SynonymMaps.CreateOrUpdate(synonymMap);
@@ -93,18 +91,13 @@ namespace AzureSearch.SDKHowTo
             {
                 Name = "hotels",
                 Fields = FieldBuilder.BuildForType<Hotel>(),
-                //No longer required for v10.1 >> if you need this downgrade Search SDK to v8.0.0-preview
-                //EncryptionKey = GetEncryptionKeyFromConfiguration(configuration)
+                EncryptionKey = GetEncryptionKeyFromConfiguration(configuration)
             };
 
             serviceClient.Indexes.Create(definition);
         }
 
-        /*
-         * EncryptionKey(optional): is no longer supported from SDK v9 onwards, hence commented out - https://docs.microsoft.com/bs-latn-ba/azure/search/search-dotnet-sdk-migration-version-9
-         * If you still required this feature, please downgrade Search SDK to v8.0.0-preview  - https://www.nuget.org/packages/Microsoft.Azure.Search/8.0.0-preview
-         * 
-         * private static EncryptionKey GetEncryptionKeyFromConfiguration(IConfigurationRoot configuration)
+        private static EncryptionKey GetEncryptionKeyFromConfiguration(IConfigurationRoot configuration)
         {
             Uri keyVaultKeyUri = new Uri(configuration["AzureKeyVaultKeyIdentifier"]);
             if (!keyVaultKeyUri.Host.Contains("vault.azure.net") || keyVaultKeyUri.Segments.Length != 4 || keyVaultKeyUri.Segments[1] != "keys/")
@@ -131,7 +124,7 @@ namespace AzureSearch.SDKHowTo
 
             encryptionKey.Validate();
             return encryptionKey;
-        } */
+        }
 
         private static void UploadDocuments(ISearchIndexClient indexClient)
         {
