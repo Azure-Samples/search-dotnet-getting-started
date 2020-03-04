@@ -123,7 +123,6 @@ namespace AzureSearch.SDKHowToSynonyms
             var synonymMap = new SynonymMap()
             {
                 Name = "desc-synonymmap",
-                Format = "solr",
                 Synonyms = "hotel, motel\ninternet,wifi\nfive star=>luxury\neconomy,inexpensive=>budget"
             };
 
