@@ -29,7 +29,7 @@ namespace SimpleSearchMVCApp
             }
         }
 
-        public DocumentSearchResult Search(string searchText)
+        public DocumentSearchResult<Document> Search(string searchText)
         {
             // Execute search based on query string
             try
