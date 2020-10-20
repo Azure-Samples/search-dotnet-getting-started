@@ -1,37 +1,34 @@
-﻿using System;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
-using Newtonsoft.Json;
+﻿using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
+using System.Text.Json.Serialization;
 
 namespace AzureSearch.SDKHowTo
 {
     public partial class Room
     {
-        [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.EnMicrosoft)]
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnMicrosoft)]
         public string Description { get; set; }
 
-        [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.FrMicrosoft)]
-        [JsonProperty("Description_fr")]
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.FrMicrosoft)]
+        [JsonPropertyName("Description_fr")]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFilterable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
         public string Type { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
         public double? BaseRate { get; set; }
 
-        [IsSearchable, IsFilterable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
         public string BedOptions { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
         public int SleepsCount { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
         public bool? SmokingAllowed { get; set; }
 
-        [IsSearchable, IsFilterable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
         public string[] Tags { get; set; }
     }
 }

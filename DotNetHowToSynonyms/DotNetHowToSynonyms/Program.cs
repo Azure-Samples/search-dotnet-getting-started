@@ -2,10 +2,13 @@
 using System.Configuration;
 using System.Linq;
 using System.Threading;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
 using Microsoft.Spatial;
 using Microsoft.Rest.Azure;
+using Azure.Search.Documents.Indexes;
+using Azure;
+using Azure.Search.Documents.Indexes.Models;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Models;
 
 namespace AzureSearch.SDKHowToSynonyms
 {
@@ -14,80 +17,85 @@ namespace AzureSearch.SDKHowToSynonyms
         // This sample shows how to delete, create, upload documents and query an index with a synonym map
         static void Main(string[] args)
         {
-            SearchServiceClient serviceClient = CreateSearchServiceClient();
+            SearchIndexClient indexClient = CreateSearchIndexClient();
 
             Console.WriteLine("Cleaning up resources...\n");
-            CleanupResources(serviceClient);
+            CleanupResources(indexClient);
 
             Console.WriteLine("Creating index...\n");
-            CreateHotelsIndex(serviceClient);
+            CreateHotelsIndex(indexClient);
 
-            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient("hotels");
+            SearchClient searchClient = indexClient.GetSearchClient("hotels");
 
             Console.WriteLine("Uploading documents...\n");
-            UploadDocuments(indexClient);
+            UploadDocuments(searchClient);
 
-            ISearchIndexClient indexClientForQueries = CreateSearchIndexClient();
+            SearchClient searchClientForQueries = CreateSearchClientForQueries();
 
-            RunQueriesWithNonExistentTermsInIndex(indexClientForQueries);
+            RunQueriesWithNonExistentTermsInIndex(searchClientForQueries);
 
             Console.WriteLine("Adding synonyms...\n");
-            UploadSynonyms(serviceClient);
+            UploadSynonyms(indexClient);
 
             Console.WriteLine("Enabling synonyms in the test index...\n");
-            EnableSynonymsInHotelsIndexSafely(serviceClient);
+            EnableSynonymsInHotelsIndexSafely(indexClient);
             Thread.Sleep(10000); // Wait for the changes to propagate
 
-            RunQueriesWithNonExistentTermsInIndex(indexClientForQueries);
+            RunQueriesWithNonExistentTermsInIndex(searchClientForQueries);
 
             Console.WriteLine("Complete.  Press any key to end application...\n");
 
             Console.ReadKey();
         }
 
-        private static SearchServiceClient CreateSearchServiceClient()
-        {
-            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string adminApiKey = ConfigurationManager.AppSettings["SearchServiceAdminApiKey"];
-
-            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
-            return serviceClient;
-        }
-
         private static SearchIndexClient CreateSearchIndexClient()
         {
-            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceQueryApiKey"];
+            string searchServiceEndPoint = ConfigurationManager.AppSettings["SearchServiceEndPoint"];
+            string adminApiKey = ConfigurationManager.AppSettings["SearchServiceAdminApiKey"];
 
-            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "hotels", new SearchCredentials(queryApiKey));
+            SearchIndexClient indexClient = new SearchIndexClient(new Uri(searchServiceEndPoint), new AzureKeyCredential(adminApiKey));
             return indexClient;
         }
 
-        private static void CleanupResources(SearchServiceClient serviceClient)
+        private static SearchClient CreateSearchClientForQueries()
         {
-            if (serviceClient.Indexes.Exists("hotels"))
-            {
-                serviceClient.Indexes.Delete("hotels");
-            }
+            string searchServiceEndPoint = ConfigurationManager.AppSettings["SearchServiceEndPoint"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceQueryApiKey"];
 
-            if (serviceClient.SynonymMaps.Exists("desc-synonymmap"))
+            SearchClient searchClient = new SearchClient(new Uri(searchServiceEndPoint), "hotels", new AzureKeyCredential(queryApiKey));
+            return searchClient;
+        }
+
+        private static void CleanupResources(SearchIndexClient indexClient)
+        {
+            try
             {
-                serviceClient.SynonymMaps.Delete("desc-synonymmap");
+                if (indexClient.GetIndex("hotels") != null)
+                {
+                    indexClient.DeleteIndex("hotels");
+                }
+                if (indexClient.GetSynonymMapNames().Value.Contains("desc-synonymmap"))
+                {
+                    indexClient.DeleteSynonymMap("desc-synonymmap");
+                }
+            }
+            catch (RequestFailedException e) when (e.Status == 404)
+            {
+                //if exception occurred and status is "Not Found", this is work as expect
+                Console.WriteLine("Failed to find index and this is because it's not there.");
             }
         }
 
-        private static void CreateHotelsIndex(SearchServiceClient serviceClient)
+        private static void CreateHotelsIndex(SearchIndexClient indexClient)
         {
-            var definition = new Index()
-            {
-                Name = "hotels",
-                Fields = FieldBuilder.BuildForType<Hotel>()
-            };
+            FieldBuilder fieldBuilder = new FieldBuilder();
+            var searchFields = fieldBuilder.Build(typeof(Hotel));
+            var searchIndex = new SearchIndex("hotels", searchFields);
 
-            serviceClient.Indexes.Create(definition);
+            indexClient.CreateOrUpdateIndex(searchIndex);
         }
 
-        private static void EnableSynonymsInHotelsIndexSafely(SearchServiceClient serviceClient)
+        private static void EnableSynonymsInHotelsIndexSafely(SearchIndexClient indexClient)
         {
             int MaxNumTries = 3;
 
@@ -95,138 +103,125 @@ namespace AzureSearch.SDKHowToSynonyms
             {
                 try
                 {
-                    Index index = serviceClient.Indexes.Get("hotels");
+                    SearchIndex index = indexClient.GetIndex("hotels");
                     index = AddSynonymMapsToFields(index);
 
                     // The IfNotChanged condition ensures that the index is updated only if the ETags match.
-                    serviceClient.Indexes.CreateOrUpdate(index, accessCondition: AccessCondition.IfNotChanged(index));
+                    indexClient.CreateOrUpdateIndex(index);
 
                     Console.WriteLine("Updated the index successfully.\n");
                     break;
                 }
-                catch (CloudException e) when (e.IsAccessConditionFailed())
+                catch (CloudException)
                 {
-                    Console.WriteLine($"Index update failed : {e.Message}. Attempt({i}/{MaxNumTries}).\n");
+                    Console.WriteLine($"Index update failed : . Attempt({i}/{MaxNumTries}).\n");
                 }
             }
         }
 
-        private static Index AddSynonymMapsToFields(Index index)
+        private static SearchIndex AddSynonymMapsToFields(SearchIndex index)
         {
-            index.Fields.First(f => f.Name == "category").SynonymMaps = new[] { "desc-synonymmap" };
-            index.Fields.First(f => f.Name == "tags").SynonymMaps = new[] { "desc-synonymmap" };
+            index.Fields.First(f => f.Name == "Category").SynonymMapNames.Add("desc-synonymmap");
+            index.Fields.First(f => f.Name == "Tags").SynonymMapNames.Add("desc-synonymmap");
             return index;
         }
 
-        private static void UploadSynonyms(SearchServiceClient serviceClient)
+        private static void UploadSynonyms(SearchIndexClient indexClient)
         {
-            var synonymMap = new SynonymMap()
-            {
-                Name = "desc-synonymmap",
-                Synonyms = "hotel, motel\ninternet,wifi\nfive star=>luxury\neconomy,inexpensive=>budget"
-            };
+            var synonymMap = new SynonymMap("desc-synonymmap", "hotel, motel\ninternet,wifi\nfive star=>luxury\neconomy,inexpensive=>budget");
 
-            serviceClient.SynonymMaps.CreateOrUpdate(synonymMap);
+            indexClient.CreateOrUpdateSynonymMap(synonymMap);
         }
 
-        private static void UploadDocuments(ISearchIndexClient indexClient)
+        private static void UploadDocuments(SearchClient searchClient)
         {
-            var hotels = new Hotel[]
-            {
-                new Hotel()
-                { 
-                    HotelId = "1", 
-                    BaseRate = 199.0, 
-                    Description = "Best hotel in town",
-                    DescriptionFr = "Meilleur hôtel en ville",
-                    HotelName = "Fancy Stay",
-                    Category = "Luxury", 
-                    Tags = new[] { "pool", "view", "wifi", "concierge" },
-                    ParkingIncluded = false, 
-                    SmokingAllowed = false,
-                    LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero), 
-                    Rating = 5, 
-                    Location = GeographyPoint.Create(47.678581, -122.131577)
-                },
-                new Hotel()
-                { 
-                    HotelId = "2", 
-                    BaseRate = 79.99,
-                    Description = "Cheapest hotel in town",
-                    DescriptionFr = "Hôtel le moins cher en ville",
-                    HotelName = "Roach Motel",
-                    Category = "Budget",
-                    Tags = new[] { "motel", "budget" },
-                    ParkingIncluded = true,
-                    SmokingAllowed = true,
-                    LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
-                    Rating = 1,
-                    Location = GeographyPoint.Create(49.678581, -122.131577)
-                },
-                new Hotel() 
-                { 
-                    HotelId = "3", 
-                    BaseRate = 129.99,
-                    Description = "Close to town hall and the river"
-                }
-            };
-
-            var batch = IndexBatch.Upload(hotels);
-
+            IndexDocumentsBatch<Hotel> batch = IndexDocumentsBatch.Create(
+                IndexDocumentsAction.Upload(
+                    new Hotel()
+                    {
+                        HotelId = "1",
+                        BaseRate = 199.0,
+                        Description = "Best hotel in town",
+                        DescriptionFr = "Meilleur hôtel en ville",
+                        HotelName = "Fancy Stay",
+                        Category = "Luxury",
+                        Tags = new[] { "pool", "view", "wifi", "concierge" },
+                        ParkingIncluded = false,
+                        SmokingAllowed = false,
+                        LastRenovationDate = new DateTimeOffset(2010, 6, 27, 0, 0, 0, TimeSpan.Zero),
+                        Rating = 5,
+                        Location = GeographyPoint.Create(47.678581, -122.131577)
+                    }),
+                IndexDocumentsAction.Upload(
+                    new Hotel()
+                    {
+                        HotelId = "2",
+                        BaseRate = 79.99,
+                        Description = "Cheapest hotel in town",
+                        DescriptionFr = "Hôtel le moins cher en ville",
+                        HotelName = "Roach Motel",
+                        Category = "Budget",
+                        Tags = new[] { "motel", "budget" },
+                        ParkingIncluded = true,
+                        SmokingAllowed = true,
+                        LastRenovationDate = new DateTimeOffset(1982, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                        Rating = 1,
+                        Location = GeographyPoint.Create(49.678581, -122.131577)
+                    }));
             try
             {
-                indexClient.Documents.Index(batch);
+                IndexDocumentsResult result = searchClient.IndexDocuments(batch);
             }
-            catch (IndexBatchException e)
+            catch (Exception)
             {
                 // Sometimes when your Search service is under load, indexing will fail for some of the documents in
                 // the batch. Depending on your application, you can take compensating actions like delaying and
                 // retrying. For this simple demo, we just log the failed document keys and continue.
-                Console.WriteLine(
-                    "Failed to index some of the documents: {0}",
-                    String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key)));
+                Console.WriteLine("Failed to index some of the documents: {0}");
             }
 
             Console.WriteLine("Waiting for documents to be indexed...\n");
             Thread.Sleep(2000);
         }
 
-        private static void RunQueriesWithNonExistentTermsInIndex(ISearchIndexClient indexClient)
+        private static void RunQueriesWithNonExistentTermsInIndex(SearchClient searchClient)
         {
-            SearchParameters parameters;
-            DocumentSearchResult<Hotel> results;
+            SearchOptions searchOptions;
+            SearchResults<Hotel> results;
 
             Console.WriteLine("Search with terms nonexistent in the index:\n");
 
-            parameters =
-                new SearchParameters()
-                {
-                    SearchFields = new[] { "category", "tags" },
-                    Select = new[] { "hotelName", "category", "tags" },
-                };
+            searchOptions = new SearchOptions();
+            searchOptions.SearchFields.Add("Category");
+            searchOptions.SearchFields.Add("Tags");
+            searchOptions.Select.Add("HotelName");
+            searchOptions.Select.Add("Category");
+            searchOptions.Select.Add("Tags");
+
 
             Console.WriteLine("Search the entire index for the phrase \"five star\":\n");
-            results = indexClient.Documents.Search<Hotel>("\"five star\"", parameters);
+            results = searchClient.Search<Hotel>("\"five star\"", searchOptions);
             WriteDocuments(results);
 
             Console.WriteLine("Search the entire index for the term 'internet':\n");
-            results = indexClient.Documents.Search<Hotel>("internet", parameters);
+            results = searchClient.Search<Hotel>("internet", searchOptions);
             WriteDocuments(results);
 
             Console.WriteLine("Search the entire index for the terms 'economy' AND 'hotel':\n");
-            results = indexClient.Documents.Search<Hotel>("economy AND hotel", parameters);
+            results = searchClient.Search<Hotel>("economy AND hotel", searchOptions);
             WriteDocuments(results);
         }
 
-        private static void WriteDocuments(DocumentSearchResult<Hotel> searchResults)
+        private static void WriteDocuments(SearchResults<Hotel> searchResults)
         {
-            if (searchResults.Results.Count != 0)
+            var a = searchResults.TotalCount;
+            if (searchResults.GetResults().Count() != 0)
             {
-                foreach (SearchResult<Hotel> result in searchResults.Results)
+                foreach (SearchResult<Hotel> result in searchResults.GetResults())
                 {
                     Console.WriteLine(result.Document);
                 }
-            } 
+            }
             else
             {
                 Console.WriteLine("no document matched");

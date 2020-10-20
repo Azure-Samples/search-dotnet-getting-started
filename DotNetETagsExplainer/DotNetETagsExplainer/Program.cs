@@ -1,90 +1,85 @@
-﻿namespace AzureSearch.SDKHowTo
-{
-    using System;
-    using Microsoft.Azure.Search;
-    using Microsoft.Azure.Search.Models;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Rest.Azure;
+using Azure;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Threading.Tasks;
 
+namespace AzureSearch.SDKHowTo
+{
     class Program
     {
         // This sample shows how ETags work by performing conditional updates and deletes
         // on an Azure Search index.
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
             IConfigurationRoot configuration = builder.Build();
 
-            SearchServiceClient serviceClient = CreateSearchServiceClient(configuration);
+            SearchIndexClient indexClient = CreateSearchIndexClient(configuration);
 
             Console.WriteLine("Deleting index...\n");
-            DeleteTestIndexIfExists(serviceClient);
+            DeleteTestIndexIfExists(indexClient);
 
             // Every top-level resource in Azure Search has an associated ETag that keeps track of which version
             // of the resource you're working on. When you first create a resource such as an index, its ETag is
             // empty.
-            Index index = DefineTestIndex();
+            SearchIndex index = DefineTestIndex();
+
             Console.WriteLine(
-                $"Test index hasn't been created yet, so its ETag should be blank. ETag: '{index.ETag}'");
+                $"Test searchIndex hasn't been created yet, so its ETag should be blank. ETag: '{index.ETag}'");
 
             // Once the resource exists in Azure Search, its ETag will be populated. Make sure to use the object
-            // returned by the SearchServiceClient! Otherwise, you will still have the old object with the
+            // returned by the SearchIndexClient! Otherwise, you will still have the old object with the
             // blank ETag.
-            Console.WriteLine("Creating index...\n");
-            index = serviceClient.Indexes.Create(index);
-
+            //Console.WriteLine("Creating index...\n");
+            index = indexClient.CreateIndex(index);
             Console.WriteLine($"Test index created; Its ETag should be populated. ETag: '{index.ETag}'");
 
-            // ETags let you do some useful things you couldn't do otherwise. For example, by using an If-Match
-            // condition, we can update an index using CreateOrUpdate and be guaranteed that the update will only
-            // succeed if the index already exists.
-            index.Fields.Add(new Field("name", AnalyzerName.EnMicrosoft));
-            index =
-                serviceClient.Indexes.CreateOrUpdate(
-                    index,
-                    accessCondition: AccessCondition.GenerateIfExistsCondition());
 
+            // ETags let you do some useful things you couldn't do otherwise. For example, by using an If-Match
+            // condition, we can update an index using CreateOrUpdateIndexAsync() and be guaranteed that the update will only
+            // succeed if the index already exists.
+            index.Fields.Add(new SearchField("name", SearchFieldDataType.String) { AnalyzerName = LexicalAnalyzerName.EnMicrosoft });
+            index = indexClient.CreateOrUpdateIndex(index);
+
+            index = await indexClient.CreateOrUpdateIndexAsync(index);
             Console.WriteLine(
-                $"Test index updated; Its ETag should have changed since it was created. ETag: '{index.ETag}'");
+                $"Test searchIndex updated; Its ETag should have changed since it was created. ETag: '{index.ETag}'");
 
             // More importantly, ETags protect you from concurrent updates to the same resource. If another
             // client tries to update the resource, it will fail as long as all clients are using the right
             // access conditions.
-            Index indexForClient1 = index;
-            Index indexForClient2 = serviceClient.Indexes.Get("test");
+            SearchIndex indexForClientUpdate = index;
+            SearchIndex indexForClientUpdateFailed = indexClient.GetIndex("test");
 
             Console.WriteLine("Simulating concurrent update. To start, both clients see the same ETag.");
-            Console.WriteLine($"Client 1 ETag: '{indexForClient1.ETag}' Client 2 ETag: '{indexForClient2.ETag}'");
+            Console.WriteLine($"ClientUpdate ETag: '{indexForClientUpdate.ETag}' ClientUpdateFailed ETag: '{indexForClientUpdateFailed.ETag}'");
 
-            // Client 1 successfully updates the index.
-            indexForClient1.Fields.Add(new Field("a", DataType.Int32));
-            indexForClient1 =
-                serviceClient.Indexes.CreateOrUpdate(
-                    indexForClient1,
-                    accessCondition: AccessCondition.IfNotChanged(indexForClient1));
+            // indexForClientUpdate successfully updates the index.
+            indexForClientUpdate.Fields.Add(new SearchField("a", SearchFieldDataType.Int32));
+            indexForClientUpdate = indexClient.CreateOrUpdateIndex(indexForClientUpdate);
 
-            Console.WriteLine($"Test index updated by client 1; ETag: '{indexForClient1.ETag}'");
+            Console.WriteLine($"Test index updated by ClientUpdate; ETag: '{indexForClientUpdate.ETag}'");
 
-            // Client 2 tries to update the index, but fails, thanks to the ETag check.
+            // indexForClientUpdateFailed tries to update the index, but fails, thanks to the ETag check.
             try
             {
-                indexForClient2.Fields.Add(new Field("b", DataType.Boolean));
-                serviceClient.Indexes.CreateOrUpdate(
-                    indexForClient2, 
-                    accessCondition: AccessCondition.IfNotChanged(indexForClient2));
+                indexForClientUpdateFailed.Fields.Add(new SearchField("b", SearchFieldDataType.Boolean));
+                indexClient.CreateOrUpdateIndex(indexForClientUpdateFailed);
 
                 Console.WriteLine("Whoops; This shouldn't happen");
                 Environment.Exit(1);
             }
-            catch (CloudException e) when (e.IsAccessConditionFailed())
+            catch (RequestFailedException e) when (e.Status == 400)
             {
-                Console.WriteLine("Client 2 failed to update the index, as expected.");
+                Console.WriteLine("ClientUpdateFailed failed to update the index, as expected.");
             }
 
             // You can also use access conditions with Delete operations. For example, you can implement an
             // atomic version of the DeleteTestIndexIfExists method from this sample like this:
             Console.WriteLine("Deleting index...\n");
-            serviceClient.Indexes.Delete("test", accessCondition: AccessCondition.GenerateIfExistsCondition());
+            indexClient.DeleteIndex("test");
 
             // This is slightly better than using the Exists method since it makes only one round trip to
             // Azure Search instead of potentially two. It also avoids an extra Delete request in cases where
@@ -96,29 +91,33 @@
             Console.ReadKey();
         }
 
-        private static SearchServiceClient CreateSearchServiceClient(IConfigurationRoot configuration)
+        private static SearchIndexClient CreateSearchIndexClient(IConfigurationRoot configuration)
         {
-            string searchServiceName = configuration["SearchServiceName"];
+            string searchServicEndpoint = configuration["SearchServicEndpoint"];
             string adminApiKey = configuration["SearchServiceAdminApiKey"];
 
-            SearchServiceClient serviceClient =
-                new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
-            return serviceClient;
+            SearchIndexClient indexClient =
+                new SearchIndexClient(new Uri(searchServicEndpoint), new AzureKeyCredential(adminApiKey));
+            return indexClient;
         }
 
-        private static void DeleteTestIndexIfExists(SearchServiceClient serviceClient)
+        private static void DeleteTestIndexIfExists(SearchIndexClient indexClient)
         {
-            if (serviceClient.Indexes.Exists("test"))
+            try
             {
-                serviceClient.Indexes.Delete("test");
+                if (indexClient.GetIndex("test") != null)
+                {
+                    indexClient.DeleteIndex("test");
+                }
+            }
+            catch (RequestFailedException e) when (e.Status == 404)
+            {
+                //if exception occurred and status is "Not Found", this is work as expect
+                Console.WriteLine("Failed to find index and this is because it's not there.");
             }
         }
 
-        private static Index DefineTestIndex() =>
-            new Index()
-            {
-                Name = "test",
-                Fields = new[] { new Field("id", DataType.String) { IsKey = true } }
-            };
+        private static SearchIndex DefineTestIndex() =>
+            new SearchIndex("test", new[] { new SearchField("id", SearchFieldDataType.String) { IsKey = true } });
     }
 }

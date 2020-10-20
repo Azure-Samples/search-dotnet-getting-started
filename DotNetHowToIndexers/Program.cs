@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
+using Azure;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Rest.Azure;
 
@@ -18,9 +20,9 @@ namespace AzureSearch.SDKHowTo
             IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
             IConfigurationRoot configuration = builder.Build();
 
-            if (configuration["SearchServiceName"] == "Put your search service name here")
+            if (configuration["SearchServiceEndPoint"] == "Put your search service endpoint here")
             {
-                Console.Error.WriteLine("Specify SearchServiceName in appsettings.json");
+                Console.Error.WriteLine("Specify SearchServiceEndPoint in appsettings.json");
                 Environment.Exit(-1);
             }
 
@@ -36,24 +38,20 @@ namespace AzureSearch.SDKHowTo
                 Environment.Exit(-1);
             }
 
-            SearchServiceClient searchService = new SearchServiceClient(
-                searchServiceName: configuration["SearchServiceName"],
-                credentials: new SearchCredentials(configuration["SearchServiceAdminApiKey"]));
+            SearchIndexClient indexClient = new SearchIndexClient(new Uri(configuration["SearchServiceEndPoint"]), new AzureKeyCredential(configuration["SearchServiceAdminApiKey"]));
+            SearchIndexerClient indexerClient = new SearchIndexerClient(new Uri(configuration["SearchServiceEndPoint"]), new AzureKeyCredential(configuration["SearchServiceAdminApiKey"]));
 
             Console.WriteLine("Creating index...");
-            Index index = new Index(
-                name: "hotels",
-                fields: FieldBuilder.BuildForType<Hotel>());
+            FieldBuilder fieldBuilder = new FieldBuilder();
+            var searchFields = fieldBuilder.Build(typeof(Hotel));
+            var searchIndex = new SearchIndex("hotels", searchFields);
+
             // If we have run the sample before, this index will be populated
             // We can clear the index by deleting it if it exists and creating
             // it again
-            bool exists = await searchService.Indexes.ExistsAsync(index.Name);
-            if (exists)
-            {
-                await searchService.Indexes.DeleteAsync(index.Name);
-            }
+            CleanupSearchIndexClientResources(indexClient, searchIndex);
 
-            await searchService.Indexes.CreateAsync(index);
+            indexClient.CreateOrUpdateIndex(searchIndex);
 
             Console.WriteLine("Creating data source...");
 
@@ -68,35 +66,30 @@ namespace AzureSearch.SDKHowTo
             // changed since the last run using built in change tracking
             // See this link for more information
             // https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-tracking-sql-server
-            DataSource dataSource = DataSource.AzureSql(
-                name: "azure-sql",
-                sqlConnectionString: configuration["AzureSQLConnectionString"],
-                tableOrViewName: "hotels",
-                deletionDetectionPolicy: new SoftDeleteColumnDeletionDetectionPolicy(
-                    softDeleteColumnName: "IsDeleted",
-                    softDeleteMarkerValue: "true"));
-            dataSource.DataChangeDetectionPolicy = new SqlIntegratedChangeTrackingPolicy();
+            var dataSource =
+                new SearchIndexerDataSourceConnection(
+                    "azure-sql",
+                    SearchIndexerDataSourceType.AzureSql,
+                    configuration["AzureSQLConnectionString"],
+                    new SearchIndexerDataContainer("hotels"));
+
             // The data source does not need to be deleted if it was already created,
             // but the connection string may need to be updated if it was changed
-            await searchService.DataSources.CreateOrUpdateAsync(dataSource);
+            indexerClient.CreateDataSourceConnection(dataSource);
 
             Console.WriteLine("Creating Azure SQL indexer...");
-            Indexer indexer = new Indexer(
-                name: "azure-sql-indexer",
-                dataSourceName: dataSource.Name,
-                targetIndexName: index.Name,
-                schedule: new IndexingSchedule(TimeSpan.FromDays(1)));
+            var indexer = new SearchIndexer("azure-sql", dataSource.Name, searchIndex.Name)
+            {
+                Description = "Data indexer",
+            };
+
             // Indexers contain metadata about how much they have already indexed
             // If we already ran the sample, the indexer will remember that it already
             // indexed the sample data and not run again
             // To avoid this, reset the indexer if it exists
-            exists = await searchService.Indexers.ExistsAsync(indexer.Name);
-            if (exists)
-            {
-                await searchService.Indexers.ResetAsync(indexer.Name);
-            }
+            CleanupSearchIndexerClientResources(indexerClient, indexer);
 
-            await searchService.Indexers.CreateOrUpdateAsync(indexer);
+            indexerClient.CreateIndexer(indexer);
 
             // We created the indexer with a schedule, but we also
             // want to run it immediately
@@ -104,7 +97,7 @@ namespace AzureSearch.SDKHowTo
 
             try
             {
-                await searchService.Indexers.RunAsync(indexer.Name);
+                await indexerClient.RunIndexerAsync(indexer.Name);
             }
             catch (CloudException e) when (e.Response.StatusCode == (HttpStatusCode)429)
             {
@@ -115,6 +108,37 @@ namespace AzureSearch.SDKHowTo
             Console.ReadKey();
             Environment.Exit(0);
         }
+
+        private static void CleanupSearchIndexClientResources(SearchIndexClient indexClient, SearchIndex index)
+        {
+            try
+            {
+                if (indexClient.GetIndex(index.Name) != null)
+                {
+                    indexClient.DeleteIndex(index.Name);
+                }
+            }
+            catch (RequestFailedException e) when (e.Status == 404)
+            {
+                //if exception occurred and status is "Not Found", this is work as expect
+                Console.WriteLine("Failed to find index and this is because it's not there.");
+            }
+        }
+
+        private static void CleanupSearchIndexerClientResources(SearchIndexerClient indexerClient, SearchIndexer indexer)
+        {
+            try
+            {
+                if (indexerClient.GetIndexer(indexer.Name) != null)
+                {
+                    indexerClient.ResetIndexer(indexer.Name);
+                }
+            }
+            catch (RequestFailedException e) when (e.Status == 404)
+            {
+                //if exception occurred and status is "Not Found", this is work as expect
+                Console.WriteLine("Failed to find indexer and this is because it's not there.");
+            }
+        }
     }
 }
-

@@ -1,8 +1,8 @@
-﻿namespace AzureSearch.SDKHowTo
-{
-    using System;
-    using System.Text;
+﻿using System;
+using System.Text;
 
+namespace AzureSearch.SDKHowTo
+{
     public partial class Room
     {
         // This implementation of ToString() is only for the purposes of the sample console application.
