@@ -121,8 +121,8 @@ namespace AzureSearch.SDKHowToSynonyms
 
         private static SearchIndex AddSynonymMapsToFields(SearchIndex index)
         {
-            index.Fields.First(f => f.Name == "Category").SynonymMapNames.Add("desc-synonymmap");
-            index.Fields.First(f => f.Name == "Tags").SynonymMapNames.Add("desc-synonymmap");
+            index.Fields.First(f => f.Name == "category").SynonymMapNames.Add("desc-synonymmap");
+            index.Fields.First(f => f.Name == "tags").SynonymMapNames.Add("desc-synonymmap");
             return index;
         }
 
@@ -192,11 +192,11 @@ namespace AzureSearch.SDKHowToSynonyms
             Console.WriteLine("Search with terms nonexistent in the index:\n");
 
             searchOptions = new SearchOptions();
-            searchOptions.SearchFields.Add("Category");
-            searchOptions.SearchFields.Add("Tags");
-            searchOptions.Select.Add("HotelName");
-            searchOptions.Select.Add("Category");
-            searchOptions.Select.Add("Tags");
+            searchOptions.SearchFields.Add("category");
+            searchOptions.SearchFields.Add("tags");
+            searchOptions.Select.Add("hotelName");
+            searchOptions.Select.Add("category");
+            searchOptions.Select.Add("tags");
 
 
             Console.WriteLine("Search the entire index for the phrase \"five star\":\n");
