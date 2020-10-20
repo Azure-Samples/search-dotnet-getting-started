@@ -1,25 +1,22 @@
-﻿using System;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
-using Newtonsoft.Json;
+﻿using Azure.Search.Documents.Indexes;
 
 namespace AzureSearch.SDKHowTo
 {
     public partial class Address
     {
-        [IsSearchable]
+        [SearchableField(IsFilterable = true)]
         public string StreetAddress { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public string City { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public string StateProvince { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public string PostalCode { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public string Country { get; set; }
     }
 }

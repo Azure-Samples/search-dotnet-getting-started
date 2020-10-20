@@ -1,9 +1,9 @@
-﻿namespace AzureSearch.SDKHowTo
-{
-    using System;
-    using System.Text;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Text;
+using System.Text.Json.Serialization;
 
+namespace AzureSearch.SDKHowTo
+{
     public partial class Address
     {
         // This implementation of ToString() is only for the purposes of the sample console application.

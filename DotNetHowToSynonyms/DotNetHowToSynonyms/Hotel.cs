@@ -1,52 +1,62 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
 using Microsoft.Spatial;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace AzureSearch.SDKHowToSynonyms
 {
-    [SerializePropertyNamesAsCamelCase]
     public partial class Hotel
     {
-        [Key]
-        [IsFilterable]
+        // The JsonPropertyName attribute is defined in the Azure Search .NET SDK.
+        // Here it used to ensure that Pascal-case property names in the model class are mapped to camel-case
+        // field names in the index.
+        [SimpleField(IsKey = true, IsFilterable = true)]
+        [JsonPropertyName("hotelId")]
         public string HotelId { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
+        [JsonPropertyName("baseRate")]
         public double? BaseRate { get; set; }
 
-        [IsSearchable]
+        [SearchableField]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.FrLucene)]
-        [JsonProperty("description_fr")]
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.FrLucene)]
+        [JsonPropertyName("description_fr")]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable]
+        [SearchableField(IsFilterable = true, IsSortable = true)]
+        [JsonPropertyName("hotelName")]
         public string HotelName { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsFacetable = true, IsSortable = true)]
+        [JsonPropertyName("category")]
         public string Category { get; set; }
 
-        [IsSearchable, IsFilterable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
+        [JsonPropertyName("tags")]
         public string[] Tags { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
+        [JsonPropertyName("parkingIncluded")]
         public bool? ParkingIncluded { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
+        [JsonPropertyName("smokingAllowed")]
         public bool? SmokingAllowed { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
+        [JsonPropertyName("lastRenovationDate")]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
+        [JsonPropertyName("rating")]
         public int? Rating { get; set; }
 
-        [IsFilterable, IsSortable]
+        [SimpleField(IsFilterable = true, IsSortable = true)]
+        [JsonPropertyName("location")]
         public GeographyPoint Location { get; set; }
 
         // ToString() method omitted for brevity...

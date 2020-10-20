@@ -1,8 +1,8 @@
-﻿namespace AzureSearch.SDKHowTo
-{
-    using System;
-    using System.Text;
+﻿using System;
+using System.Text;
 
+namespace AzureSearch.SDKHowTo
+{
     public partial class Hotel
     {
         // This implementation of ToString() is only for the purposes of the sample console application.
@@ -31,7 +31,7 @@
             {
                 builder.AppendFormat("Description (French): {0}\n", DescriptionFr);
             }
-            
+
             if (!String.IsNullOrEmpty(Category))
             {
                 builder.AppendFormat("Category: {0}\n", Category);

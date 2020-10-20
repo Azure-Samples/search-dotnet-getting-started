@@ -1,36 +1,33 @@
-﻿namespace AzureSearch.SDKHowTo
-{
-    using System;
-    using Microsoft.Azure.Search;
-    using Microsoft.Azure.Search.Models;
-    using Microsoft.Spatial;
-    using Newtonsoft.Json;
+﻿using System;
+using Microsoft.Spatial;
+using System.Text.Json.Serialization;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
 
+namespace AzureSearch.SDKHowTo
+{
     public partial class Hotel
     {
-        [System.ComponentModel.DataAnnotations.Key]
-        [IsFilterable]
+        [SimpleField(IsKey = true, IsFilterable = true)]
         public string HotelId { get; set; }
 
-        [IsSearchable, IsSortable]
+        [SearchableField(IsSortable = true)]
         public string HotelName { get; set; }
 
-        [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.EnLucene)]
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnLucene)]
         public string Description { get; set; }
 
-        [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.FrLucene)]
-        [JsonProperty("Description_fr")]
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.FrLucene)]
+        [JsonPropertyName("Description_fr")]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public string Category { get; set; }
 
-        [IsSearchable, IsFilterable, IsFacetable]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
         public string[] Tags { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public bool? ParkingIncluded { get; set; }
 
         // SmokingAllowed reflects whether any room in the hotel allows smoking.
@@ -39,15 +36,16 @@
         [JsonIgnore]
         public bool? SmokingAllowed => (Rooms != null) ? Array.Exists(Rooms, element => element.SmokingAllowed == true) : (bool?)null;
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public double? Rating { get; set; }
 
+        [SearchableField]
         public Address Address { get; set; }
 
-        [IsFilterable, IsSortable]
+        [SearchableField(IsFilterable = true, IsSortable = true)]
         public GeographyPoint Location { get; set; }
 
         public Room[] Rooms { get; set; }
