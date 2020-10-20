@@ -12,7 +12,7 @@ products:
 
 This repository includes several projects that show you how to use the [**Azure.Search.Documents**](https://docs.microsoft.com/dotnet/api/overview/azure/search.documents-readme) client library in Azure SDK for .NET to create C# applications that use Azure Cognitive Search.
 
-An earlier version of the samples that were built using the [**Microsoft.Azure.Search**] client libraries can be found in the **v10** branch of this repo. To download those versions, switch the branch from **master** to **v10**, and then select **Code** to download or open those samples.
+An earlier version of the samples that were built using the [**Microsoft.Azure.Search**](https://docs.microsoft.com/dotnet/api/overview/azure/search/client10) client libraries can be found in the **v10** branch of this repo. To download those versions, switch the branch from **master** to **v10**, and then select **Code** to download or open those samples.
 
 ## DotNetHowTo
 
@@ -44,6 +44,8 @@ This sample demonstrates the benefits of adding a synonym map using "before-and-
 * Re-run the queries. This time, query results are found due to matching synonyms in the synonym list.
 
 To run this sample, open the solution in Visual Studio and modify **app.config** to use valid values for your search service.
+
+For detailed instructions, see [Example: Add synonyms for Azure Cognitive Search in C#](https://docs.microsoft.com/azure/search/search-synonyms-tutorial-sdk).
 
 ## DotNetHowToIndexers
 
