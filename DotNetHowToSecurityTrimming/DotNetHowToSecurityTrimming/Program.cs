@@ -7,10 +7,12 @@ using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
-using Newtonsoft.Json;
 using Microsoft.Graph;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Azure;
+using Azure.Search.Documents.Models;
+using Azure.Search.Documents.Indexes.Models;
 
 namespace DotNetHowToSecurityTrimming
 {
@@ -18,8 +20,8 @@ namespace DotNetHowToSecurityTrimming
     {
         public static string ClientId;
 
-        private static ISearchServiceClient _searchClient;
-        private static ISearchIndexClient _indexClient;
+        private static SearchClient searchClient;
+        private static SearchIndexClient indexClient;
 
         private static ConcurrentDictionary<string, List<string>> _groupsCache = new ConcurrentDictionary<string, List<string>>();
         private static MicrosoftGraphHelper _microsoftGraphHelper;
@@ -33,9 +35,9 @@ namespace DotNetHowToSecurityTrimming
             _microsoftGraphHelper = new MicrosoftGraphHelper(ClientId);
             _microsoftGraphHelper.CreateGraphServiceClient();
             string tenant = ConfigurationManager.AppSettings["Tenant"];
-            
+
             // Azure Search Initialization
-            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string searchServicEndpoint = ConfigurationManager.AppSettings["SearchServicEndpoint"];
             string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
             string indexName = "securedfiles";
 
@@ -50,8 +52,8 @@ namespace DotNetHowToSecurityTrimming
             RefreshCache(users);
 
             // Create an HTTP reference to the catalog index
-            _searchClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
-            _indexClient = new SearchIndexClient(searchServiceName, indexName, new SearchCredentials(apiKey));
+            indexClient = new SearchIndexClient(new Uri(searchServicEndpoint), new AzureKeyCredential(apiKey));
+            searchClient = indexClient.GetSearchClient(indexName);
 
             if (DeleteIndex(indexName))
             {
@@ -138,7 +140,7 @@ namespace DotNetHowToSecurityTrimming
                 _groupsCache[user] = groups;
             }
         }
-        
+
         private static async void RefreshCache(IEnumerable<User> users)
         {
             HttpClient client = new HttpClient();
@@ -151,59 +153,53 @@ namespace DotNetHowToSecurityTrimming
             // Using the filter below, the search result will contain all documents that their GroupIds field contain any one of the 
             // Ids in the groups list
             string filter = String.Format("groupIds/any(p:search.in(p, '{0}'))", string.Join(",", String.Join(",", _groupsCache[user])));
-            SearchParameters parameters =
-                new SearchParameters()
+            SearchOptions searchOptions =
+                new SearchOptions()
                 {
-                    Filter = filter,
-                    Select = new[] { "name" }
+                    Filter = filter
                 };
+            searchOptions.Select.Add("name");
 
-            DocumentSearchResult<SecuredFiles> results = _indexClient.Documents.Search<SecuredFiles>("*", parameters);
+            SearchResults<SecuredFiles> results = searchClient.Search<SecuredFiles>("*", searchOptions);
 
-            Console.WriteLine("Results for groups '{0}' : {1}", _groupsCache[user], results.Results.Select(r => r.Document.Name));
+            Console.WriteLine("Results for groups '{0}' : {1}", _groupsCache[user], results.GetResults().Select(r => r.Document.Name));
         }
 
         private static void IndexDocuments(string indexName, List<string> groups)
         {
-            var actions = new IndexAction<SecuredFiles>[]
-                            {
-                                IndexAction.Upload(
-                                    new SecuredFiles()
-                                    {
-                                        FileId = "1",
-                                        Name = "secured_file_a",
-                                        GroupIds = new[] { groups[0] }
-                                    }),
-                                IndexAction.Upload(
-                                    new SecuredFiles()
-                                    {
-                                        FileId = "2",
-                                        Name = "secured_file_b",
-                                        GroupIds = new[] { groups[0] }
-                                    }),
-                                IndexAction.Upload(
-                                    new SecuredFiles()
-                                    {
-                                        FileId = "3",
-                                        Name = "secured_file_c",
-                                        GroupIds = new[] { groups[1] }
-                                    })
-                            };
-
-            var batch = IndexBatch.New(actions);
+            IndexDocumentsBatch<SecuredFiles> batch = IndexDocumentsBatch.Create(
+                IndexDocumentsAction.Upload(
+                    new SecuredFiles()
+                    {
+                        FileId = "1",
+                        Name = "secured_file_a",
+                        GroupIds = new[] { groups[0] }
+                    }),
+                IndexDocumentsAction.Upload(
+                    new SecuredFiles()
+                    {
+                        FileId = "2",
+                        Name = "secured_file_b",
+                        GroupIds = new[] { groups[0] }
+                    }),
+                IndexDocumentsAction.Upload(
+                    new SecuredFiles()
+                    {
+                        FileId = "3",
+                        Name = "secured_file_c",
+                        GroupIds = new[] { groups[1] }
+                    }));
 
             try
             {
-                _indexClient.Documents.Index(batch);
+                IndexDocumentsResult result = searchClient.IndexDocuments(batch);
             }
-            catch (IndexBatchException e)
+            catch (Exception)
             {
                 // Sometimes when your Search service is under load, indexing will fail for some of the documents in
                 // the batch. Depending on your application, you can take compensating actions like delaying and
                 // retrying. For this simple demo, we just log the failed document keys and continue.
-                Console.WriteLine(
-                    "Failed to index some of the documents: {0}",
-                    String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key)));
+                Console.WriteLine("Failed to index some of the documents: {0}");
             }
 
             Console.WriteLine("Waiting for documents to be indexed...\n");
@@ -214,12 +210,12 @@ namespace DotNetHowToSecurityTrimming
         {
             try
             {
-                _searchClient.Indexes.Delete(indexName);
+                indexClient.DeleteIndex(indexName);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error deleting index: {0}\r\n", ex.Message);
-                Console.WriteLine("Did you remember to add your SearchServiceName and SearchServiceApiKey to the app.config?\r\n");
+                Console.WriteLine("Did you remember to add your SearchServicEndpoint and SearchServiceApiKey to the app.config?\r\n");
                 return false;
             }
 
@@ -231,13 +227,12 @@ namespace DotNetHowToSecurityTrimming
             // Create the Azure Search index based on the included schema
             try
             {
-                var definition = new Index()
-                {
-                    Name = indexName,
-                    Fields = FieldBuilder.BuildForType<SecuredFiles>()
-                };
+                FieldBuilder fieldBuilder = new FieldBuilder();
+                var searchFields = fieldBuilder.Build(typeof(SecuredFiles));
+                var definition = new SearchIndex(indexName, searchFields);
 
-                _searchClient.Indexes.Create(definition);
+                indexClient.CreateOrUpdateIndex(definition);
+
             }
             catch (Exception ex)
             {

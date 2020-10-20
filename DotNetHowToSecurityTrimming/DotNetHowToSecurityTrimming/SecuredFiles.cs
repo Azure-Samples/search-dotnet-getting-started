@@ -1,22 +1,14 @@
-﻿using System;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
-using Microsoft.Spatial;
-using Newtonsoft.Json;
+﻿using Azure.Search.Documents.Indexes;
+using System.Text.Json.Serialization;
 
-// The SerializePropertyNamesAsCamelCase attribute is defined in the Azure Search .NET SDK.
-// It ensures that Pascal-case property names in the model class are mapped to camel-case
-// field names in the index.
-[SerializePropertyNamesAsCamelCase]
 public partial class SecuredFiles
 {
-    [System.ComponentModel.DataAnnotations.Key]
-    [IsFilterable]
+    [SimpleField(IsKey = true, IsFilterable = true)]
     public string FileId { get; set; }
 
-    [IsFilterable, IsSearchable, IsSortable]
+    [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
     public string Name { get; set; }
 
-    [IsFilterable]
+    [SimpleField(IsFilterable = true)]
     public string[] GroupIds { get; set; }
 }
