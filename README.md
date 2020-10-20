@@ -1,140 +1,89 @@
 ---
 page_type: sample
-description: "This repo includes several projects to help you get started with Azure Search and .NET."
+description: "Contains several projects to help you get started with Azure Cognitive Search and the .NET SDK"
 languages:
 - csharp
 products:
-- dotnet
 - azure
 - azure-cognitive-search
 ---
 
-# Getting Started with Azure Search using .NET
+# Getting Started with Azure Cognitive Search using .NET
 
-This sample includes several projects that are meant to help get started with Azure Search and .NET. It leverages the [Azure Search .NET SDK](https://aka.ms/search-sdk) as well as many best practices.
+This repository includes several projects that show you how to use the [**Azure.Search.Documents**](https://docs.microsoft.com/dotnet/api/overview/azure/search.documents-readme) client library in Azure SDK for .NET to create C# applications that use Azure Cognitive Search.
 
-The DotNetHowTo sample is a simple .NET Core console application that shows how to:
+An earlier version of the samples that were built using the [**Microsoft.Azure.Search**] client libraries can be found in the **v10** branch of this repo. To download those versions, switch the branch from **master** to **v10**, and then select **Code** to download or open those samples.
 
-* Create and Delete an Azure Search index
-* Upload Documents to an Azure Search index
-* Search & Filter documents within an index
+## DotNetHowTo
 
-The DotNetETagsExplainer sample shows how to use ETags to update Azure Search resources safely in the presence of concurrency.
+This sample is a simple .NET Core console application that shows you how to:
 
-The DotNetHowToIndexers sample is a simple .NET Core console application that shows how to:
+* Create and delete a search index
+* Upload documents
+* Search and filter documents within an index
 
-* Create and Delete an Azure Search index
-* Create an Azure Search indexer for Azure SQL
+To run this sample, open the solution in Visual Studio and modify **appsettings.json** to use valid values for your search service.
 
-The DotNetHowToMultipleDataSources sample demonstrates combining multiple Azure data sources into a single search index using indexers:
+<!-- For detailed instructions, see [How to develop in C# using Azure.Search.Documents](https://docs.microsoft.com/azure/search/search-howto-dotnet-sdk-v11).  -->
 
-* Create and Delete an Azure Search index
-* Create two Azure Search indexers, one for Azure SQL and one for Cosmos DB
-* Target the same Azure Search index using both indexers
+## DotNetHowToEncryptionUsingCMK
 
-The DotNetHowToSynonyms sample demonstrates how to incorporate the Synonyms feature in your application step by step:
+This sample demonstrates how to create a synonym-map and an index that are encrypted with a customer-managed key in Azure Key Vault. This sample uses several services that must be set up in advance: Azure Key Vault, Azure Active Directory, and modifications to your existing search service.
 
-* Create an Azure Search index
-* Search documents using terms that do not appear in the indexed documents
+The **appsettings.json** file provides placeholders for service information.
+
+For detailed instructions, see [How to configure customer-managed keys for data encryption in Azure Cognitive Search](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys).
+
+## DotNetHowToSynonyms
+
+This sample demonstrates the benefits of adding a synonym map using "before-and-after" queries:
+
+* Creates a search index
+* Searches for documents using terms that do not appear in the indexed documents (query returns no results)
 * Define and upload synonym rules
-* Repeat the search
+* Re-run the queries. This time, query results are found due to matching synonyms in the synonym list.
 
-The DotNetHowToSecurityTrimming sample demonstrates how to implement document-level security in Azure Search using filters.
+To run this sample, open the solution in Visual Studio and modify **app.config** to use valid values for your search service.
 
-The DotNetSample project is a more detailed example that demonstrates:
+## DotNetHowToIndexers
 
-* How to use the Azure Search Indexer to ingest data from common stores (such as Azure SQL) to populate an Azure Search index
-* A simple ASP.net MVC application that allow you to search and view results from an Azure Search index
+This sample is a simple .NET Core console application that shows how create and run a search indexer that retrieves data from an Azure SQL database.
 
-The DotNetHowToAutocomplete sample demonstrates several techniques for adding auto-complete and suggestions to your search experience.  It demonstrates the following:
+Before you can run this sample, you will need an Azure SQL database that contains sample data used by the indexer. You will also need to modify settings in **appsettings.json**.
 
-* Implement a search input box
-* Add support for an auto-complete list that pulls from a remote source 
-* Retrieve suggestions and auto-complete using the .Net SDK and REST API
-* Support client-side caching to improve performance 
+1. Create a new database in Azure SQL named hotels.
+1. Run the `data\hotels.sql` script provided in this sample against your Azure SQL database.
+1. Open the DotNetHowToIndexers.sln in Visual Studio.
+1. Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database.
+1. Compile and Run the project using Visual Studio.
 
-The DotNetHowToEncryptionUsingCMK sample demonstrates how to create a synonym-map and an index that are encrypted with customer-managed key in Azure Key Vault.
+## DotNetHowToSecurityTrimming
 
-## Running the DotNetHowTo sample
+This sample demonstrates how to implement document-level security in Azure Search using filters.
 
-* Open the DotNetHowTo.sln project in Visual Studio
-* Update the appsettings.json with the service and api details of your Azure Search service
-* Compile and Run the project
+For more information, see [Security filters for trimming Azure Search results using Active Directory identities](https://docs.microsoft.com/azure/search/search-security-trimming-for-azure-search-with-aad).
 
-## Running the DotNetETagsExplainer sample
+## DotNetETagsExplainer
 
-* Open the DotNetETagsExplainer.sln project in Visual Studio
-* Update the appsettings.json with the service and api details of your Azure Search service
-* Compile and Run the project
+This sample is a .NET Core console application that shows how to use ETags to update Azure Cognitive Search resources safely in the presence of concurrency. The code in this sample simulates concurrent write operations so that you can see how that condition is handled.
 
-## Running the DotNetHowToIndexers sample
+To run this sample, open the solution in Visual Studio and modify **appsettings.json** to use valid values for your search service.
 
-* Open the DotNetHowToIndexers.csproj project in Visual Studio.
-* Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database.
-* Run the `data\hotels.sql` script against your Azure SQL database.
-* Compile and Run the project using Visual Studio 2017.
-* Alternatively, download the .NET Core SDK at https://www.microsoft.com/net/core and
-  issue a `dotnet run` command from the DotNetHowToIndexers directory.
+## Retired samples
 
-## Running the DotNetHowToMultipleDataSources sample
+The following samples have been removed from the master branch.
 
-* Open the DotNetHowToMultipleDataSources.csproj project in Visual Studio.
-* Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database and Cosmos DB database
-* Run the `data\hotels.sql` script against your Azure SQL database.
-* Upload the json files in `HotelsJson` to a SQL collection called `hotels` in your Cosmos DB database
-* Compile and Run the project using Visual Studio 2017.
-* Alternatively, download the .NET Core SDK at https://www.microsoft.com/net/core and
-  issue a `dotnet run` command from the DotNetHowToMultipleDataSources directory.
+### DotNetHowToAutocomplete
 
-## Running the DotNetHowToSynonyms sample
+This sample was not migrated to use the Azure.Search.Documents client library. It has been replaced by a project in the [create-first-app](https://github.com/Azure-Samples/azure-search-dotnet-samples/tree/master/create-first-app) sample in the [azure-search-dotnet-samples](https://github.com/Azure-Samples/azure-search-dotnet-samples) repository. Alternatively, you can look at the v10 version of the sample.
 
-* Open the DotNetHowToSynonyms.sln project in Visual Studio
-* Update the App.config with the service and api details of your Azure Search service
-* Compile and Run the project
+### DotNetHowToMultipleDataSources
 
-## Running the DotNetHowToSecurityTrimming sample
+This sample was not migrated to use the Azure.Search.Documents client library. It has been replaced by the [multiple-data-sources](https://github.com/Azure-Samples/azure-search-dotnet-samples/tree/master/multiple-data-sources) sample in the [azure-search-dotnet-samples](https://github.com/Azure-Samples/azure-search-dotnet-samples) repository. Alternatively, you can look at the v10 version of the sample.
 
-See [Security filters for trimming Azure Search results using Active Directory identities](https://docs.microsoft.com/azure/search/search-security-trimming-for-azure-search-with-aad)
+### DotNetSample
 
-## Running the DotNetSample sample
-
-* Open the AzureSearchDotNetSample.sln project in Visual Studio
-* Update the Web.config in the SimpleSearchMVCApp project with the service and api details of your Azure Search service
-* Update the App.config in the DataIndexer project with the service and api details of your Azure Search service
-* Compile and Run the DataIndexer project to create an Azure Search and populate it with content from an Azure SQL database
-* Compile and Run the SimpleSearchMVCApp project to search and view the results from this index
-
-## Running the DotNetHowToAutocomplete sample
-
-This sample demonstrates how to create an index and a synonym-map, both encrypted using a customer-managed key in Azure Key Vault. To learn more, see [Azure Search encryption using customer-managed keys in Azure Key Vault](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys).
-
-To run this sample, in addition to an Azure Search service, you need access to an Azure Key Vault account, and optionally also to an Azure Active Directory application. 
-You need to obtain the key-identifier of some Azure Key Vault key, that has at least 'get', 'wrap' and 'unwrap' capabilities. An Azure Key Vault key identifier has the following format: 'https://<key-vault-name>.vault.azure.net/keys/<key-name>/<key-version>'. 
-
-In order for your Azure Search service to be able to use your Azure Key Vault key, you must grant your search service certain Key Vault access permissions, specifically 'get', 'wrap' and 'unwrap'.
-If your Azure Search service has a managed service identity (see [Create a service identity](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys#3---create-a-service-identity)), you can grant these permissions from your key vault directly to your search service. If MSI is not enabled for your search service, and you don't wish to enable it, you must create (or use existing) Azure Active Directory (AAD) application, grant that application the required access permissions, and share the credentials of this AAD application with your Azure Search service. Learn more about this option here - [Use an externally managed Azure Active Directory application](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys#aad-app).
-
-After obtaining the required resources described about, follow this steps to run this sample:
-
-* Open the DotNetHowToAutocomplete.sln project in Visual Studio
-* Update the appsettings.json with your Azure Search service name and api-keys, and your Azure Key Vault key identifier
-* If MSI is not to be used, update the appsettings.json with your AAD credentials
-* Compile and Run the project
-
-## Running the DotNetHowToEncryptionUsingCMK sample
-
-* Open the DotNetHowToEncryptionUsingCMK.sln project in Visual Studio
-* Compile and Run the project
-
-## More information
-
-For more details on the "how-to" sample, please refer to this article:
-
-  - [How to use Azure Search from a .NET Application](https://docs.microsoft.com/azure/search/search-howto-dotnet-sdk).
-
-For more details on the "how-to" sample for synonyms, please refer to this article:
-
-  - [Synonym C# tutorial for Azure Search](https://aka.ms/azsdotnetsynonyms).
+This sample was not migrated to use the Azure.Search.Documents client library. We recommend that you refer to **DotNetHowToIndexers** to view code that calls the Azure SQL Indexer. Alternatively, you can look at the v10 version of the sample.
 
 ---
 
