@@ -1,56 +1,52 @@
-﻿namespace AzureSearch.SDKHowTo
-{
-    using System;
-    using Microsoft.Azure.Search;
-    using Microsoft.Azure.Search.Models;
-    using Microsoft.Spatial;
-    using Newtonsoft.Json;
+﻿using System;
+using Microsoft.Spatial;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
+using System.Text.Json.Serialization;
 
-    // The SerializePropertyNamesAsCamelCase attribute is defined in the Azure Search .NET SDK.
-    // It ensures that Pascal-case property names in the model class are mapped to camel-case
+namespace AzureSearch.SDKHowTo
+{
+
+
+    // The JsonPropertyName attribute is defined in the Azure Search .NET SDK.
+    // Here it used to ensure that Pascal-case property names in the model class are mapped to camel-case
     // field names in the index.
-    [SerializePropertyNamesAsCamelCase]
     public partial class Hotel
     {
-        [System.ComponentModel.DataAnnotations.Key]
-        [IsFilterable]
+        [SimpleField(IsKey = true, IsFilterable = true)]
         public string HotelId { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public double? BaseRate { get; set; }
 
-        [IsSearchable]
+        [SearchableField]
         public string Description { get; set; }
 
-        [IsSearchable]
-        [Analyzer(AnalyzerName.AsString.FrLucene)]
-        [JsonProperty("description_fr")]
+        [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.FrLucene)]
         public string DescriptionFr { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable]
+        [SearchableField(IsFilterable = true, IsSortable = true)]
         public string HotelName { get; set; }
 
-        [IsSearchable, IsFilterable, IsSortable, IsFacetable]
-        [SynonymMaps("desc-synonymmap")]
+        [SearchableField(IsFilterable = true, IsFacetable = true, IsSortable = true)]
         public string Category { get; set; }
 
-        [IsSearchable, IsFilterable, IsFacetable]
-        [SynonymMaps("desc-synonymmap")]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
         public string[] Tags { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
         public bool? ParkingIncluded { get; set; }
 
-        [IsFilterable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsFacetable = true)]
         public bool? SmokingAllowed { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
-        [IsFilterable, IsSortable, IsFacetable]
+        [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         public int? Rating { get; set; }
 
-        [IsFilterable, IsSortable]
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public GeographyPoint Location { get; set; }
     }
 }
