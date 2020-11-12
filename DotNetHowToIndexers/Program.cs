@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents.Indexes;
@@ -26,7 +25,7 @@ namespace AzureSearch.SDKHowTo
                 Environment.Exit(-1);
             }
 
-            if (configuration["SearchServiceAdminApiKey"] == "Put your primary or secondary API key here")
+            if (configuration["SearchServiceAdminApiKey"] == "Put your search service admin API key here")
             {
                 Console.Error.WriteLine("Specify SearchServiceAdminApiKey in appsettings.json");
                 Environment.Exit(-1);
@@ -44,7 +43,7 @@ namespace AzureSearch.SDKHowTo
             Console.WriteLine("Creating index...");
             FieldBuilder fieldBuilder = new FieldBuilder();
             var searchFields = fieldBuilder.Build(typeof(Hotel));
-            var searchIndex = new SearchIndex("hotels", searchFields);
+            var searchIndex = new SearchIndex("hotels-sql-idx", searchFields);
 
             // If we have run the sample before, this index will be populated
             // We can clear the index by deleting it if it exists and creating
@@ -68,19 +67,43 @@ namespace AzureSearch.SDKHowTo
             // https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-tracking-sql-server
             var dataSource =
                 new SearchIndexerDataSourceConnection(
-                    "azure-sql",
+                    "hotels-sql-ds",
                     SearchIndexerDataSourceType.AzureSql,
                     configuration["AzureSQLConnectionString"],
                     new SearchIndexerDataContainer("hotels"));
 
             // The data source does not need to be deleted if it was already created,
             // but the connection string may need to be updated if it was changed
-            indexerClient.CreateDataSourceConnection(dataSource);
+            indexerClient.CreateOrUpdateDataSourceConnection(dataSource);
 
             Console.WriteLine("Creating Azure SQL indexer...");
-            var indexer = new SearchIndexer("azure-sql", dataSource.Name, searchIndex.Name)
+
+            var schedule = new IndexingSchedule(TimeSpan.FromDays(1))
+            {
+                StartTime = DateTimeOffset.Now
+            };
+
+            var parameters = new IndexingParameters()
+            {
+                BatchSize = 100,
+                MaxFailedItems = 0,
+                MaxFailedItemsPerBatch = 0
+            };
+
+            // Indexer declarations require a data source and search index.
+            // Common optional properties include a schedule, parameters, and field mappings
+            // The field mappings below are redundant due to how the Hotel class is defined, but 
+            // we included them anyway to show the syntax 
+            var indexer = new SearchIndexer("hotels-sql-idxr", dataSource.Name, searchIndex.Name)
             {
                 Description = "Data indexer",
+                Schedule = schedule,
+                Parameters = parameters,
+                FieldMappings =
+                {
+                    new FieldMapping("_id") {TargetFieldName = "HotelId"},
+                    new FieldMapping("Amenities") {TargetFieldName = "Tags"}
+                }
             };
 
             // Indexers contain metadata about how much they have already indexed
@@ -89,7 +112,7 @@ namespace AzureSearch.SDKHowTo
             // To avoid this, reset the indexer if it exists
             CleanupSearchIndexerClientResources(indexerClient, indexer);
 
-            indexerClient.CreateIndexer(indexer);
+            await indexerClient.CreateOrUpdateIndexerAsync(indexer);
 
             // We created the indexer with a schedule, but we also
             // want to run it immediately
@@ -104,9 +127,45 @@ namespace AzureSearch.SDKHowTo
                 Console.WriteLine("Failed to run indexer: {0}", e.Response.Content);
             }
 
+            // Wait 5 seconds for indexing to complete before checking status
+            Console.WriteLine("Waiting for indexing...\n");
+            System.Threading.Thread.Sleep(5000);
+
+            // After an indexer run, you can retrieve status.
+            CheckIndexerStatus(indexerClient, indexer);
+
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             Environment.Exit(0);
+        }
+
+        private static void CheckIndexerStatus(SearchIndexerClient indexerClient, SearchIndexer indexer)
+        {
+            try
+            {
+                string indexerName = "hotels-sql-idxr";
+                SearchIndexerStatus execInfo = indexerClient.GetIndexerStatus(indexerName);
+
+                Console.WriteLine("Indexer has run {0} times.", execInfo.ExecutionHistory.Count);
+                Console.WriteLine("Indexer Status: " + execInfo.Status.ToString());
+
+                IndexerExecutionResult result = execInfo.LastResult;
+
+                Console.WriteLine("Latest run");
+                Console.WriteLine("Run Status: {0}", result.Status.ToString());
+                Console.WriteLine("Total Documents: {0}, Failed: {1}", result.ItemCount, result.FailedItemCount);
+
+                TimeSpan elapsed = result.EndTime.Value - result.StartTime.Value;
+                Console.WriteLine("StartTime: {0:T}, EndTime: {1:T}, Elapsed: {2:t}", result.StartTime.Value, result.EndTime.Value, elapsed);
+
+                string errorMsg = (result.ErrorMessage == null) ? "none" : result.ErrorMessage;
+                Console.WriteLine("ErrorMessage: {0}", errorMsg);
+                Console.WriteLine(" Document Errors: {0}, Warnings: {1}\n", result.Errors.Count, result.Warnings.Count);
+            }
+            catch (Exception e)
+            {
+                // Handle exception
+            }
         }
 
         private static void CleanupSearchIndexClientResources(SearchIndexClient indexClient, SearchIndex index)
@@ -120,8 +179,8 @@ namespace AzureSearch.SDKHowTo
             }
             catch (RequestFailedException e) when (e.Status == 404)
             {
-                //if exception occurred and status is "Not Found", this is work as expect
-                Console.WriteLine("Failed to find index and this is because it's not there.");
+                //if exception occurred and status is "Not Found", this is working as expected
+                Console.WriteLine("Failed to find index and this is because it doesn't exist.");
             }
         }
 
@@ -136,8 +195,8 @@ namespace AzureSearch.SDKHowTo
             }
             catch (RequestFailedException e) when (e.Status == 404)
             {
-                //if exception occurred and status is "Not Found", this is work as expect
-                Console.WriteLine("Failed to find indexer and this is because it's not there.");
+                //if exception occurred and status is "Not Found", this is working as expected
+                Console.WriteLine("Failed to find indexer and this is because it doesn't exist.");
             }
         }
     }
