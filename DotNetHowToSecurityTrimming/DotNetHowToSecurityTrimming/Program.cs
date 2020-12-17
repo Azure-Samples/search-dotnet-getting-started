@@ -1,18 +1,16 @@
-﻿#define HowToExample
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
-using Microsoft.Graph;
+using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
-using Azure;
-using Azure.Search.Documents.Models;
 using Azure.Search.Documents.Indexes.Models;
+using Azure.Search.Documents.Models;
+using Microsoft.Graph;
 
 namespace DotNetHowToSecurityTrimming
 {
@@ -27,7 +25,7 @@ namespace DotNetHowToSecurityTrimming
         private static MicrosoftGraphHelper _microsoftGraphHelper;
 
         // This sample shows how to use Azure Active Directory (AAD) together with Azure Search to restrict document access based on user group membership through Azure Search filters.
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             // Application Id as obtained by creating an application from https://apps.dev.microsoft.com
             // See also the guided setup:https://docs.microsoft.com/en-us/azure/active-directory/develop/guidedsetups/active-directory-windesktop
@@ -242,3 +240,4 @@ namespace DotNetHowToSecurityTrimming
         }
     }
 }
+

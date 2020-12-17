@@ -61,9 +61,16 @@ Before you can run this sample, you will need an Azure SQL database that contain
 
 ## DotNetHowToSecurityTrimming
 
-This sample demonstrates how to implement document-level security in Azure Search using filters.
+This sample demonstrates how to implement document-level security in Azure Search using filters. To test this application thoroughly, you will need:
 
-For more information, see [Security filters for trimming Azure Search results using Active Directory identities](https://docs.microsoft.com/azure/search/search-security-trimming-for-azure-search-with-aad).
+1. Search service URL
+1. Search service Admin API key
+1. Azure Active Directory Tenant ID
+1. Application registration for a multi-tenant app, where the application is registered by the tenant administrator or has admin consent.
+
+You might need to create your own Active Directory Tenant to gain sufficient permission to fully test the code.
+
+For more information and steps, see [Security filters for trimming Azure Search results using Active Directory identities](https://docs.microsoft.com/azure/search/search-security-trimming-for-azure-search-with-aad).
 
 ## DotNetETagsExplainer
 

@@ -1,5 +1,8 @@
 ﻿#define HowToExample
 
+using Microsoft.Graph;
+using Microsoft.Identity.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +10,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Graph;
-using Microsoft.Identity.Client;
-using Newtonsoft.Json;
 
 namespace DotNetHowToSecurityTrimming
 {
@@ -26,7 +26,7 @@ namespace DotNetHowToSecurityTrimming
 
         public void CreateGraphServiceClient()
         {
-            PublicClientApplication app = new PublicClientApplication(_clientId);
+            IPublicClientApplication app = PublicClientApplicationBuilder.Create(_clientId).WithRedirectUri("http://localhost").Build();
             string[] scopes = { "User.ReadWrite.All", "Group.ReadWrite.All", "Directory.ReadWrite.All" };
 
             // Instantiate the Microsoft Graph, and provide a way to acquire the token. If token expires, it will
@@ -38,31 +38,34 @@ namespace DotNetHowToSecurityTrimming
                 // If a user has already signed-in, we try first to acquire the token silently, and then if this fails
                 // we try to acquire it with a user interaction.
                 // In this sample there is one user that is signed-in and therefore we choose the first element.
-                var user = app.Users.FirstOrDefault();
-                if (user != null)
+                var accounts = await app.GetAccountsAsync();
+                var firstAccount = accounts.FirstOrDefault();
+                if (firstAccount != null)
                 {
                     try
                     {
                         // Attempts to acquire the access token from cache
-                        result = await app.AcquireTokenSilentAsync(scopes, user);
+                        result = await app.AcquireTokenSilent(scopes, firstAccount).ExecuteAsync();
                     }
                     catch (MsalClientException ex)
                     {
                         if (ex.ErrorCode == "interaction_required")
                         {
                             // Interactive request to acquire token
-                            result = await app.AcquireTokenAsync(scopes);
+                            result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
                         }
                     }
                 }
                 else
                 {
-                    result = await app.AcquireTokenAsync(scopes);
+                    result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
                 }
                 _token = result.AccessToken;
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", _token);
             }));
         }
+
+
 
         private string BuildGetMemberGroupsRequest(IEnumerable<User> users)
         {
@@ -172,3 +175,4 @@ namespace DotNetHowToSecurityTrimming
         }
     }
 }
+
