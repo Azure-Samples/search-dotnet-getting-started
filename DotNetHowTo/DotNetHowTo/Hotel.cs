@@ -45,7 +45,8 @@ namespace AzureSearch.SDKHowTo
         [SearchableField]
         public Address Address { get; set; }
 
-        [SearchableField(IsFilterable = true, IsSortable = true)]
+        [JsonConverter(typeof(Azure.Core.Serialization.MicrosoftSpatialGeoJsonConverter))]
+        [SimpleField(IsFilterable = true, IsSortable = true)]
         public GeographyPoint Location { get; set; }
 
         public Room[] Rooms { get; set; }
