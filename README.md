@@ -61,14 +61,21 @@ Before you can run this sample, you will need an Azure SQL database that contain
 
 ## DotNetHowToSecurityTrimming
 
-This sample demonstrates how to implement document-level security in Azure Search using filters. To test this application thoroughly, you will need:
+This .NET Framework C# console application demonstrates how to implement document-level security in Azure Search using filters. To test this application thoroughly, you will need:
 
 1. Search service URL
 1. Search service Admin API key
 1. Azure Active Directory Tenant ID
 1. Application registration for a multi-tenant app, where the application is registered by the tenant administrator or has admin consent.
 
-You might need to create your own Active Directory Tenant to gain sufficient permission to fully test the code.
+You might need to create your own Active Directory Tenant to gain sufficient permission to fully test the code. You'll be prompted to sign in using an account from the tenant.
+
+For application registration:
+
+1. Select **API permissions** and then select for "Directory.Readwrite.All", "Users.ReadWrite.All", and "Groups.ReadWrite.All" for the application.
+1. On the same page, select **Grant admin consent for tenant**"**.
+1. Select **Authentication**, select **Add a platform**, and then select **Mobile and Desktop applications**.
+1. Select all three of the ssuggested redirects. Under Advanced settings, enable mobile and desktop flows.
 
 For more information and steps, see [Security filters for trimming Azure Search results using Active Directory identities](https://docs.microsoft.com/azure/search/search-security-trimming-for-azure-search-with-aad).
 
