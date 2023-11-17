@@ -1,6 +1,6 @@
 ---
 page_type: sample
-description: "Contains several projects to help you get started with Azure Cognitive Search and the .NET SDK"
+description: "Contains several projects to help you get started with Azure AI Search and the .NET SDK"
 languages:
 - csharp
 products:
@@ -8,9 +8,9 @@ products:
 - azure-cognitive-search
 ---
 
-# Getting Started with Azure Cognitive Search using .NET
+# Getting Started with Azure AI Search using .NET
 
-This repository includes several projects that show you how to use the [**Azure.Search.Documents**](https://docs.microsoft.com/dotnet/api/overview/azure/search.documents-readme) client library in Azure SDK for .NET to create C# applications that use Azure Cognitive Search.
+This repository includes several projects that show you how to use the [**Azure.Search.Documents**](https://docs.microsoft.com/dotnet/api/overview/azure/search.documents-readme) client library in Azure SDK for .NET to create C# applications that use Azure AI Search.
 
 An earlier version of the samples that were built using the [**Microsoft.Azure.Search**](https://docs.microsoft.com/dotnet/api/overview/azure/search/client10) client libraries can be found in the **v10** branch of this repo. To download those versions, switch the branch from **master** to **v10**, and then select **Code** to download or open those samples.
 
@@ -32,7 +32,7 @@ This sample demonstrates how to create a synonym-map and an index that are encry
 
 The **appsettings.json** file provides placeholders for service information.
 
-For detailed instructions, see [How to configure customer-managed keys for data encryption in Azure Cognitive Search](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys).
+For detailed instructions, see [How to configure customer-managed keys for data encryption in Azure AI Search](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys).
 
 ## DotNetHowToSynonyms
 
@@ -45,7 +45,7 @@ This sample demonstrates the benefits of adding a synonym map using "before-and-
 
 To run this sample, open the solution in Visual Studio and modify **app.config** to use valid values for your search service.
 
-For detailed instructions, see [Example: Add synonyms for Azure Cognitive Search in C#](https://docs.microsoft.com/azure/search/search-synonyms-tutorial-sdk).
+For detailed instructions, see [Example: Add synonyms for Azure AI Search in C#](https://docs.microsoft.com/azure/search/search-synonyms-tutorial-sdk).
 
 ## DotNetHowToIndexers
 
@@ -61,7 +61,7 @@ Before you can run this sample, you will need an Azure SQL database that contain
 
 ## DotNetETagsExplainer
 
-This sample is a .NET Core console application that shows how to use ETags to update Azure Cognitive Search resources safely in the presence of concurrency. The code in this sample simulates concurrent write operations so that you can see how that condition is handled.
+This sample is a .NET Core console application that shows how to use ETags to update Azure AI Search resources safely in the presence of concurrency. The code in this sample simulates concurrent write operations so that you can see how that condition is handled.
 
 To run this sample, open the solution in Visual Studio and modify **appsettings.json** to use valid values for your search service.
 
