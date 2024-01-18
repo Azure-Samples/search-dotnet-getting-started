@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.Spatial;
-using Azure.Search.Documents.Indexes;
+﻿using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
+using Microsoft.Spatial;
+using System;
 using System.Text.Json.Serialization;
 
 namespace AzureSearch.SDKHowTo
