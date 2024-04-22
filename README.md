@@ -34,19 +34,6 @@ The **appsettings.json** file provides placeholders for service information.
 
 For detailed instructions, see [How to configure customer-managed keys for data encryption in Azure AI Search](https://docs.microsoft.com/azure/search/search-security-manage-encryption-keys).
 
-## DotNetHowToSynonyms
-
-This sample demonstrates the benefits of adding a synonym map using "before-and-after" queries:
-
-* Creates a search index
-* Searches for documents using terms that do not appear in the indexed documents (query returns no results)
-* Define and upload synonym rules
-* Re-run the queries. This time, query results are found due to matching synonyms in the synonym list.
-
-To run this sample, open the solution in Visual Studio and modify **app.config** to use valid values for your search service.
-
-For detailed instructions, see [Example: Add synonyms for Azure AI Search in C#](https://docs.microsoft.com/azure/search/search-synonyms-tutorial-sdk).
-
 ## DotNetHowToIndexers
 
 This sample is a simple .NET Core console application that shows how create and run a search indexer that retrieves data from an Azure SQL database.
@@ -72,6 +59,10 @@ The following samples have been removed from the master branch.
 ### DotNetHowToSecurityTrimming (Archived)
 
 This sample is [now archived](https://github.com/Azure-Samples/azure-search-sample-archive). It's replaced by [instructions for setting up access control](https://github.com/Azure-Samples/azure-search-openai-demo/blob/main/LoginAndAclSetup.md) on the [azure-search-openai-demo](https://github.com/Azure-Samples/azure-search-openai-demo/tree/main).
+
+### DotNetHowToSynonyms (Archived)
+
+This C# sample was used to demonstrate the benefits of adding a synonym map using "before-and-after" queries. The Azure SDK team provides a more recent sample. See [Azure.Search.Documents Samples - Service Operations](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/search/Azure.Search.Documents/samples/Sample02_Service.md#create-a-synonym-map) for replacement code. |
 
 ### DotNetHowToAutocomplete
 
