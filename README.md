@@ -46,15 +46,13 @@ Before you can run this sample, you will need an Azure SQL database that contain
 1. Update the appsettings.json with your service name, api key, and connection string to your Azure SQL database.
 1. Compile and Run the project using Visual Studio.
 
-## DotNetETagsExplainer
-
-This sample is a .NET Core console application that shows how to use ETags to update Azure AI Search resources safely in the presence of concurrency. The code in this sample simulates concurrent write operations so that you can see how that condition is handled.
-
-To run this sample, open the solution in Visual Studio and modify **appsettings.json** to use valid values for your search service.
-
 ## Retired samples
 
 The following samples have been removed from the master branch.
+
+### DotNetETagsExplainer
+
+This sample is [now archived](https://github.com/Azure-Samples/azure-search-sample-archive). It's a .console application that shows how to use ETags to update Azure AI Search resources safely in the presence of concurrency. The code in this sample simulates concurrent write operations so that you can see how that condition is handled.
 
 ### DotNetHowToSecurityTrimming (Archived)
 
@@ -62,7 +60,7 @@ This sample is [now archived](https://github.com/Azure-Samples/azure-search-samp
 
 ### DotNetHowToSynonyms (Archived)
 
-This C# sample was used to demonstrate the benefits of adding a synonym map using "before-and-after" queries. The Azure SDK team provides a more recent sample. See [Azure.Search.Documents Samples - Service Operations](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/search/Azure.Search.Documents/samples/Sample02_Service.md#create-a-synonym-map) for replacement code. |
+This C# sample was used to demonstrate the benefits of adding a synonym map using "before-and-after" queries. The Azure SDK team provides a more recent sample. See [Azure.Search.Documents Samples - Service Operations](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/search/Azure.Search.Documents/samples/Sample02_Service.md#create-a-synonym-map) for replacement code.
 
 ### DotNetHowToAutocomplete
 
